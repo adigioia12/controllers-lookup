@@ -1,0 +1,76 @@
+Citta;Name;Role;Location;Master
+Milano BA; (0040)_ITA_MI_iSTAR_I01_A*; MASTER; "0° piano BA; Locale Rack AT006
+Milano BA; (0041)_ITA_MI_iSTAR_T01_A*; MASTER; "0° piano BA; Locale Rack AT006
+Milano BA; (0042)_ITA_MI_iSTAR_T02_A; MEMBER; "0° piano BA; Locale Rack AT011;(0041)_ITA_MI_iSTAR_T01_A*
+Milano BA; (0043)_ITA_MI_iSTAR_T03_A; MEMBER; "0° piano BA; Locale Rack AT011;(0041)_ITA_MI_iSTAR_T01_A*
+Milano BA; (0028)_ITA_MI_iSTAR_11_A*; MASTER; "1° piano BA; Locale Rack A126
+Milano BA; (0029)_ITA_MI_iSTAR_12_A; MEMBER; "1° piano BA; Locale Rack A126; (0028)_ITA_MI_iSTAR_11_A*
+Milano BA; (0030)_ITA_MI_iSTAR_13_A; MEMBER; "1° piano BA; A P1 Disimpegno Core; (0028)_ITA_MI_iSTAR_11_A*
+Milano BA; (0031)_ITA_MI_iSTAR_21_A*; MASTER; "2° piano BA; Locale Rack A227
+Milano BA; (0032)_ITA_MI_iSTAR_22_A; MEMBER; "2° piano BA; Locale Rack A227; (0031)_ITA_MI_iSTAR_21_A*
+Milano BA; (0033)_ITA_MI_iSTAR_23_A; MEMBER; "2° piano BA; Locale Rack A227; (0031)_ITA_MI_iSTAR_21_A*
+Milano BA; (0034)_ITA_MI_iSTAR_31_A*; MASTER; "3° piano BA; Locale Rack A322
+Milano BA; (0035)_ITA_MI_iSTAR_32_A; MEMBER; "3° piano BA; Locale Rack A322; (0034)_ITA_MI_iSTAR_31_A*
+Milano BA; (0036)_ITA_MI_iSTAR_41_A*; MASTER; "4° piano BA; Locale Rack A415
+Milano BA; (0037)_ITA_MI_iSTAR_42_A; MEMBER; "4° piano BA; Locale Rack A415; (0036)_ITA_MI_iSTAR_41_A*
+Milano BA; (0038)_ITA_MI_iSTAR_51_A*; MASTER; "5° piano BA; Locale Rack A503
+Milano BA; (0039)_ITA_MI_iSTAR_52_A; MASTER; "5° piano BA; Locale Rack A503; (0038)_ITA_MI_iSTAR_51_A*
+Milano B3; (0044)_ITA_MI_iSTAR_01_B3; MEMBER; "Mezzanino piano B3; Locale Q.E. B3 ????????
+Milano B2; (0050)_ITA_MI_iSTAR_T01_B2*; "Mezzanino° piano B2; Location Locale Rack B2 T003
+Milano B2; (0045)_ITA_MI_iSTAR_11_B2; MEMBER; "1° piano B2; Locale Rack B2 108;(0050)_ITA_MI_iSTAR_T01_B2*
+Milano B2; (0046)_ITA_MI_iSTAR_21_B2; MEMBER; "2° piano B2; Locale Rack B2 208;(0050)_ITA_MI_iSTAR_T01_B2*
+Milano B2; (0047)_ITA_MI_iSTAR_31_B2; MEMBER; "3° piano B2; Locale Rack B2 308;(0050)_ITA_MI_iSTAR_T01_B2*
+Milano B2; (0048)_ITA_MI_iSTAR_I01_B2; MEMBER; "Interrato° piano B2; Locale Rack B2 I003;(0050)_ITA_MI_iSTAR_T01_B2*
+Milano B2; (0049)_ITA_MI_iSTAR_I02_B2; MEMBER; "Interrato° piano B2; Locale Rack B2 I003;(0050)_ITA_MI_iSTAR_T01_B2*
+Milano B1; (0088)_ITA_MI_iSTAR_I01_B1_INT_A*; MASTER; "Interrato° piano B1; Locale Rack B1 I020
+Milano B1; (0089)_ITA_MI_iSTAR_I02_B1_INT_A; MEMBER; "Interrato° B1; Locale Rack B1 I020; (0088)_ITA_MI_iSTAR_I01_B1_INT_A*
+Milano B1; (0090)_ITA_MI_iSTAR_I03_B1_INT_C; MEMBER; "Interrato° B1; Locale Rack B1 ??????; (0088)_ITA_MI_iSTAR_I01_B1_INT_A*
+Milano B1; (0091)_ITA_MI_iSTAR_I04_B1_INT_C; MEMBER; "Interrato° B1; Locale Rack B1 ??????; (0088)_ITA_MI_iSTAR_I01_B1_INT_A*
+Milano B1; (0092)_ITA_MI_iSTAR_I05_B1_INT_B; MEMBER; "Interrato° B1; Locale Rack B1 I018; (0088)_ITA_MI_iSTAR_I01_B1_INT_A*
+Milano B1; (0093)_ITA_MI_iSTAR_I06_B1_INT_B; MEMBER; "Interrato° B1; Locale Rack B1 I018; (0088)_ITA_MI_iSTAR_I01_B1_INT_A*
+Milano B1; (0094)_ITA_MI_iSTAR_I07_B1_INT_C; MEMBER; "Interrato° B1; Locale Rack B1 T004; (0088)_ITA_MI_iSTAR_I01_B1_INT_A*
+Milano B1; (0095)_ITA_MI_iSTAR_T01_B1_PT_A*; MASTER; "0° piano B1; Locale Q.E. B1 T033
+Milano B1; (0096)_ITA_MI_iSTAR_T02_B1_PT_A___; MEMBER; "0° B1; Locale Rack B1 T016; (0095)_ITA_MI_iSTAR_T01_B1_PT_A*
+Milano B1; (0097)_ITA_MI_iSTAR_T03_B1_PT_A; MEMBER; "0° B1; Locale Rack B1 T016; (0095)_ITA_MI_iSTAR_T01_B1_PT_A*
+Milano B1; (0098)_ITA_MI_iSTAR_T04_B1_PT_C; MEMBER; "0° B1; Locale Rack B1 T016; (0095)_ITA_MI_iSTAR_T01_B1_PT_A*
+Milano B1; (0051)_ITA_MI_iSTAR_11_B1_L1_A*; MASTER; "1° piano B1; Locale Rack B1 149
+Milano B1; (0052)_ITA_MI_iSTAR_12_B1_L1_B; MEMBER; "1° piano B1; Locale Rack B1 112; (0051)_ITA_MI_iSTAR_11_B1_L1_A*
+Milano B1; (0053)_ITA_MI_iSTAR_13_B1_L1_C; MEMBER; "1° piano B1; Locale Rack B1 112; (0051)_ITA_MI_iSTAR_11_B1_L1_A*
+Milano B1; (0054)_ITA_MI_iSTAR_14_B1_L1_C; MEMBER; "1° piano B1; Locale Rack B1 112; (0051)_ITA_MI_iSTAR_11_B1_L1_A*
+Milano B1; (0055)_ITA_MI_iSTAR_21_B1_L2_A*; MASTER; "2° piano B1; Locale Rack B1 251
+Milano B1; (0056)_ITA_MI_iSTAR_22_B1_2_B; MEMBER; "2° piano B1; Locale Rack B1 212; (0055)_ITA_MI_iSTAR_21_B1_L2_A*
+Milano B1; (0057)_ITA_MI_iSTAR_23_B1_L2_C; MEMBER; "2° piano B1; Locale Rack B1 212; (0055)_ITA_MI_iSTAR_21_B1_L2_A*
+Milano B1; (0058)_ITA_MI_iSTAR_24_B1_L2_C; MEMBER; "2° piano B1; Locale Rack B1 212; (0055)_ITA_MI_iSTAR_21_B1_L2_A*
+Milano B1; (0059)_ITA_MI_ISTAR_31_B1_L3_A*; MASTER; "3° piano B1; Locale Rack B1 347
+Milano B1; (0060)_ITA_MI_iSTAR_32_B1_L3_B; MEMBER; "3° piano B1; Locale Rack B1 312; (0059)_ITA_MI_ISTAR_31_B1_L3_A*
+Milano B1; (0061)_ITA_MI_iSTAR_33_B1_L3_C; MEMBER; "3° piano B1; Locale Rack B1 312; (0059)_ITA_MI_ISTAR_31_B1_L3_A*
+Milano B1; (0062)_ITA_MI_iSTAR_34_B1_L3_C; MEMBER; "3° piano B1; Locale Rack B1 312; (0059)_ITA_MI_ISTAR_31_B1_L3_A*
+Milano B1; (0063)_ITA_MI_iSTAR_41_B1_L4_A*; MASTER; "4° piano B1; Locale Rack B1 451
+Milano B1; (0064)_ITA_MI_iSTAR_42_B1_L4_C; MEMBER; "4° piano B1; Locale Rack B1 412; (0063)_ITA_MI_iSTAR_41_B1_L4_A*
+Milano B1; (0065)_ITA_MI_iSTAR_43_B1_L4_C; MEMBER; "4° piano B1; Locale Rack B1 412; (0063)_ITA_MI_iSTAR_41_B1_L4_A*
+Milano B1; (0066)_ITA_MI_iSTAR_44_B1_L4_C; MEMBER; "4° piano B1; Locale Rack B1 412; (0063)_ITA_MI_iSTAR_41_B1_L4_A*
+Milano B1; (0067)_ITA_MI_iSTAR_51_B1_L5_A*; MASTER; "5° piano B1; Locale Rack B1 547
+Milano B1; (0068)_ITA_MI_iSTAR_52_B1_L5_B; MEMBER; "5° piano B1; Locale Rack B1 512; (0067)_ITA_MI_iSTAR_51_B1_L5_A*
+Milano B1; (0069)_ITA_MI_iSTAR_53_B1_L5_C; MEMBER; "5° piano B1; Locale Rack B1 512; (0067)_ITA_MI_iSTAR_51_B1_L5_A*
+Milano B1; (0070)_ITA_MI_iSTAR_54_B1_L5_C; MEMBER; "5° piano B1; Locale Rack B1 512; (0067)_ITA_MI_iSTAR_51_B1_L5_A*
+Milano B1; (0071)_ITA_MI_iSTAR_61_B1_L6_A*; MASTER; "6° piano B1; Locale Rack B1 651
+Milano B1; (0072)_ITA_MI_iSTAR_62_B1_L6_B; MEMBER; "6° piano B1; Locale Rack B1 612; (0071)_ITA_MI_iSTAR_61_B1_L6_A*
+Milano B1; (0073)_ITA_MI_iSTAR_63_B1_L6_C; MEMBER; "6° piano B1; Locale Rack B1 612; (0071)_ITA_MI_iSTAR_61_B1_L6_A*
+Milano B1; (0074)_ITA_MI_iSTAR_64_B1_L6_C; MEMBER; "6° piano B1; Locale Rack B1 612; (0071)_ITA_MI_iSTAR_61_B1_L6_A*
+Milano B1; (0075)_ITA_MI_iSTAR_71_B1_L7_A*; MASTER; "7° piano B1; Locale Rack B1 744
+Milano B1; (0076)_ITA_MI_iSTAR_72_B1_L7_B; MEMBER; "7° piano B1; Locale Rack B1 711; (0075)_ITA_MI_iSTAR_71_B1_L7_A*
+Milano B1; (0077)_ITA_MI_iSTAR_73_B1_L7_C; MEMBER; "7° piano B1; Locale Rack B1 711; (0075)_ITA_MI_iSTAR_71_B1_L7_A*
+Milano B1; (0078)_ITA_MI_iSTAR_74_B1_L7_C; MEMBER; "7° piano B1; Locale Rack B1 711; (0075)_ITA_MI_iSTAR_71_B1_L7_A*
+Milano B1; (0079)_ITA_MI_iSTAR_81_B1_L8_C*; MASTER; "8° piano B1; Locale Rack B1 815
+Milano B1; (0080)_ITA_MI_iSTAR_82_B1_L8_B; MEMBER; "8° piano B1; Locale Rack B1 823; (0079)_ITA_MI_iSTAR_81_B1_L8_C*
+Milano B1; (0081)_ITA_MI_iSTAR_83_B1_L8_B; MEMBER; "8° piano B1; Locale Rack B1 823; (0079)_ITA_MI_iSTAR_81_B1_L8_C*
+Milano B1; (0082)_ITA_MI_iSTAR_84_B1_L8_B; MEMBER; "8° piano B1; Locale Rack B1 823; (0079)_ITA_MI_iSTAR_81_B1_L8_C*
+Milano B1; (0084)_ITA_MI_iSTAR_91_B1_L9_A*; MASTER; "9° piano B1; Locale Rack B1 945
+Milano B1; (0085)_ITA_MI_iSTAR_92_B1_L9_A; MEMBER; "9° piano B1; Locale Rack B1 945; (0084)_ITA_MI_iSTAR_91_B1_L9_A*
+Milano B1; (0086)_ITA_MI_iSTAR_93_B1_L9_A; MEMBER; "9° piano B1; Locale Rack B1 945; (0084)_ITA_MI_iSTAR_91_B1_L9_A*
+Milano B1; (0087)_ITA_MI_iSTAR_94_B1_L9_B; MEMBER; "9° piano B1; Locale Rack B1 920; (0084)_ITA_MI_iSTAR_91_B1_L9_A*
+Milano FC; (0099)_ITA_MI_iSTAR_01_FC*; MASTER; "-1° piano FC; Locale Q.E. FC
+Milano FC; (0100)_ITA_MI_iSTAR_02_FC; MEMBER; "-1° piano B1; Locale Q.E. FC; (0099)_ITA_MI_iSTAR_01_FC*
+Milano FC; (0101)_ITA_MI_iSTAR_03_FC; MEMBER; "-1° piano B1; Locale Q.E. FC; (0099)_ITA_MI_iSTAR_01_FC*
+Milano FC; (0102)_ITA_MI_iSTAR_04_FC; MEMBER; "-1° piano B1; Locale Q.E. FC; (0099)_ITA_MI_iSTAR_01_FC*
+Milano FC; (0103)_ITA_MI_iSTAR_05_FC; MEMBER; "-1° piano B1; Locale Q.E. FC; (0099)_ITA_MI_iSTAR_01_FC*
