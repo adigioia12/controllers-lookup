@@ -1,405 +1,193 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>iSTAR Controller Lookup</title>
-  <meta name="description" content="Ricerca iSTAR MASTER/MEMBER con dati JSON (anagrafica + relazioni)."/>
-  <style>
-    :root{
-      --bg:#0f172a; --card:#0b1224cc; --text:#e5e7eb; --muted:#94a3b8;
-      --accent:#60a5fa; --accent-strong:#3b82f6; --surface:#0b1224; --chip:#1e293b;
-      --shadow:0 10px 30px rgba(0,0,0,.35),0 2px 8px rgba(0,0,0,.25);
-      --danger:#ef4444; --ok:#10b981;
-    }
-    @media (prefers-color-scheme: light){
-      :root{
-        --bg:#f5f7fb; --surface:#ffffff; --card:#ffffffd9; --text:#0f172a; --muted:#64748b;
-        --chip:#f1f5f9; --shadow:0 10px 25px rgba(18,32,73,.08),0 2px 8px rgba(18,32,73,.06);
-      }
-    }
-    html,body{height:100%;background:
-      radial-gradient(1000px 800px at 20% 0%, #1e293b 0%, transparent 60%),
-      radial-gradient(1000px 800px at 80% 100%, #111827 0%, transparent 60%), var(--bg);
-      color:var(--text);font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      margin:0}
-    .container{max-width:980px;margin:0 auto;padding:24px clamp(16px,3vw,32px) 48px;display:grid;gap:18px}
-    header{text-align:center;margin-top:clamp(16px,5vh,64px)}
-    h1{font-size:clamp(26px,4.6vw,40px);line-height:1.1;margin:0 0 8px;letter-spacing:-.02em}
-    .sub{color:var(--muted);font-size:clamp(14px,2.4vw,16px);margin:0 auto;max-width:68ch}
-    .card{background:var(--card);backdrop-filter:blur(8px);border:1px solid rgba(148,163,184,.18);border-radius:16px;box-shadow:var(--shadow)}
-    .search-section{padding:16px}
-    .toolbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-bottom:8px}
-    .hints{display:flex;flex-wrap:wrap;gap:8px;margin:10px 2px 2px;color:var(--muted);font-size:13px}
-    .chip{background:var(--chip);border:1px solid rgba(148,163,184,.25);color:inherit;padding:6px 10px;border-radius:999px;cursor:pointer;user-select:none;transition:background .2s, transform .06s}
-    .chip:hover{background:rgba(148,163,184,.15)} .chip:active{transform:translateY(1px)}
-    .search-box{position:relative;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:16px;border-radius:12px;background:var(--surface);border:1px solid rgba(148,163,184,.25)}
-    .search-box input{appearance:none;border:none;outline:none;background:transparent;color:var(--text);font-size:clamp(16px,2.8vw,18px);padding:12px 4px}
-    .btn{display:inline-grid;place-items:center;border:none;background:linear-gradient(135deg,var(--accent),var(--accent-strong));color:#fff;padding:10px 12px;border-radius:10px;cursor:pointer;transition:.08s transform,.2s filter}
-    .btn.secondary{background:transparent;color:var(--accent-strong);border:1px solid rgba(148,163,184,.35)}
-    .btn:hover{filter:brightness(1.05)} .btn:active{transform:translateY(1px) scale(.99)}
-    .results{margin-top:12px;padding:14px 16px 18px;display:grid;gap:12px}
-    .result-card{border:1px solid rgba(148,163,184,.22);border-radius:12px;padding:14px 16px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(0,0,0,.02));display:grid;gap:10px;animation:fadeIn .18s ease-out}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-    .title-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-    .badge{font-size:12px;font-weight:600;letter-spacing:.02em;padding:4px 8px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid transparent;color:#fff}
-    .badge.master{background:linear-gradient(135deg,#10b981,#059669)}
-    .badge.member{background:linear-gradient(135deg,#f59e0b,#d97706)}
-    .kv{display:grid;gap:2px}.kv .k{color:var(--muted);font-size:12px}.kv .v{font-size:15px}
-    .list{display:grid;gap:6px;margin-top:4px}
-    .not-found{border:1px dashed rgba(148,163,184,.35);border-radius:12px;padding:14px 16px;color:var(--muted)}
-    footer{margin-top:16px;text-align:center;color:var(--muted);font-size:12px}
-    code.k{background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px}
-    .status{font-size:12px;color:var(--muted);margin-left:8px}
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>iSTAR Network Lookup</title>
+    <style>
+        :root {
+            --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --muted: #94a3b8;
+            --accent-master: #10b981; --accent-member: #f59e0b; --border: #334155;
+            --highlight: #3b82f6;
+        }
+        body {
+            background-color: var(--bg); color: var(--text);
+            font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 20px;
+        }
+        .container { max-width: 850px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { font-size: 2.2rem; color: var(--highlight); margin-bottom: 5px; }
+        
+        .search-container { position: relative; margin-bottom: 2rem; }
+        input#query {
+            width: 100%; padding: 18px 25px; border-radius: 12px; border: 2px solid var(--border);
+            background: var(--card); color: white; font-size: 1.2rem; box-sizing: border-box;
+            outline: none; transition: all 0.2s;
+        }
+        input#query:focus { border-color: var(--highlight); box-shadow: 0 0 15px rgba(59, 130, 246, 0.3); }
 
-    /* Autocomplete */
-    .suggest-box{
-      position:absolute; left:0; right:72px; top:66px;
-      background:var(--surface); border:1px solid rgba(148,163,184,.35);
-      border-radius:10px; box-shadow:var(--shadow); max-height:280px; overflow:auto; z-index:20; display:none;
-    }
-    .suggest-item{padding:8px 10px; cursor:pointer; display:flex; align-items:center; gap:8px}
-    .suggest-item:hover, .suggest-item.active{background:rgba(148,163,184,.12)}
-    .suggest-hl{color:var(--accent-strong); font-weight:600}
-  </style>
+        .result-card {
+            background: var(--card); border-radius: 16px; padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4); border: 1px solid var(--border);
+            animation: fadeIn 0.4s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .badge {
+            padding: 5px 14px; border-radius: 999px; font-size: 0.85rem; font-weight: 800;
+            text-transform: uppercase; display: inline-block; margin-bottom: 12px;
+        }
+        .badge.master { background: var(--accent-master); color: #064e3b; }
+        .badge.member { background: var(--accent-member); color: #78350f; }
+
+        .info-row {
+            background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px;
+            margin-top: 15px; border-left: 5px solid var(--highlight);
+        }
+        .label { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600; }
+        .value { font-size: 1.15rem; margin-top: 5px; display: block; color: #fff; }
+
+        .cluster-section { 
+            margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--border); 
+        }
+        .member-list-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px; border-radius: 8px; margin-bottom: 5px;
+            background: rgba(255,255,255,0.02); border: 1px solid transparent;
+        }
+        .member-list-item:hover { border-color: var(--border); background: rgba(255,255,255,0.05); }
+
+        .no-results { text-align: center; color: var(--muted); padding: 50px; border: 2px dashed var(--border); border-radius: 16px; }
+        .loading { text-align: center; font-style: italic; color: var(--highlight); }
+    </style>
 </head>
 <body>
-  <div class="container">
+
+<div class="container">
     <header>
-      <h1>iSTAR Controller Lookup</h1>
-      <p class="sub">Dati da <code class="k">controllers.json</code> (anagrafica + relazioni). Cerca per <strong>codice</strong> (es. <em>0041</em>) o per <strong>name</strong>.</p>
+        <h1>iSTAR Finder</h1>
+        <p style="color: var(--muted)">Inserisci l'ID a 4 cifre (es. 0041) o parte del nome del controller</p>
     </header>
 
-    <section class="card search-section" aria-label="Ricerca controller">
-      <div class="toolbar">
-        <div class="hints">
-          <span class="chip" data-fill="0041">0041</span>
-          <span class="chip" data-fill="0031">0031</span>
-          <span class="chip" data-fill="0028">0028</span>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <button id="reloadBtn" class="btn secondary" title="Ricarica (cache-bust)">Ricarica</button>
-          <span id="status" class="status" role="status" aria-live="polite"></span>
-        </div>
-      </div>
+    <div class="search-container">
+        <input type="text" id="query" placeholder="Cerca controller..." autocomplete="off">
+    </div>
 
-      <div class="search-box">
-        <input id="query" type="text" spellcheck="false" placeholder="Es. 0041 oppure (0041)_ITA_MI_iSTAR_T01_A*" aria-label="Codice o Name" autofocus>
-        <button id="searchBtn" class="btn" title="Cerca" aria-label="Cerca">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M21 21l-4.35-4.35" stroke="white" stroke-width="2" stroke-linecap="round"></path>
-            <circle cx="11" cy="11" r="7" stroke="white" stroke-width="2"></circle>
-          </svg>
-        </button>
-        <div id="suggestions" class="suggest-box" role="listbox" aria-label="Suggerimenti"></div>
-      </div>
+    <div id="results">
+        <div class="no-results">In attesa del caricamento dati...</div>
+    </div>
+</div>
 
-      <div id="results" class="results" aria-live="polite"></div>
-    </section>
+<script>
+let controllerData = [];
+const masterToMemberMap = new Map();
 
-    <footer>
-      <p>Modifica <code class="k">controllers.json</code> e premi <strong>Ricarica</strong> per vedere le modifiche.</p>
-    </footer>
-  </div>
+// 1. Fetch JSON Data
+async function loadData() {
+    try {
+        const response = await fetch('controllers.json');
+        if (!response.ok) throw new Error('Errore nel caricamento del file JSON');
+        const data = await response.json();
+        controllerData = data.controllers;
 
-  <script type="module">
-    // ======= Config =======
-    const DATA_URL = './controllers.json';
-
-    // ======= Helpers =======
-    const $ = (s, r=document) => r.querySelector(s);
-    const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
-    const norm = s => String(s ?? '').trim().toLowerCase();
-    const escapeHtml = str => String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
-    const statusEl = $('#status');
-
-    // ======= Dati =======
-    let byCode = new Map();         // code -> rec
-    let byName = new Map();         // lower(name) -> rec
-    let masterOf = new Map();       // memberCode -> masterCode
-    let membersOf = new Map();      // masterCode -> [memberCodes]
-    let allCodes = [];
-    let allNames = [];
-
-    // Normalizza nome campi e ricava code da name se manca
-    function normalizeRecord(r){
-      const get = (...keys) => {
-        for (const k of keys) {
-          if (r[k] !== undefined && r[k] !== null && String(r[k]).trim() !== '') return String(r[k]).trim();
-        }
-        return '';
-      };
-      let code = get('code','Code','codice','Codice','id','Id');
-      const name = get('name','Name','nome','Nome');
-      const role = get('role','Role','tipologia','Tipologia').toUpperCase();
-      const city = get('city','City','citta','Citta');
-      const location = get('location','Location','ubicazione','Ubicazione');
-
-      // Se manca code, prova ad estrarlo dal name: (dddd)
-      if (!code && name) {
-        const m = name.match(/\((\d{3,6})\)/);
-        if (m) code = m[1];
-      }
-      return { code, name, role, city, location };
-    }
-
-    function normalizeLink(l){
-      const get = (...keys) => {
-        for (const k of keys) {
-          if (l[k] !== undefined && l[k] !== null && String(l[k]).trim() !== '') return String(l[k]).trim();
-        }
-        return '';
-      };
-      const member = get('member','Member','figlio','Figlio');
-      const master = get('master','Master','padre','Padre');
-      return { member, master };
-    }
-
-    async function loadData({ bust=false } = {}) {
-      const url = bust ? `${DATA_URL}?t=${Date.now()}` : DATA_URL;
-      const res = await fetch(url, { cache: 'no-store' });
-      if (!res.ok) throw new Error('Impossibile caricare "controllers.json" (HTTP ' + res.status + ')');
-      const data = await res.json();
-      if (!data || !Array.isArray(data.controllers) || !Array.isArray(data.links)) {
-        throw new Error('Formato JSON non valido: servono "controllers" (array) e "links" (array).');
-      }
-      indexData(data.controllers, data.links);
-    }
-
-    function indexData(list, links) {
-      byCode.clear(); byName.clear(); masterOf.clear(); membersOf.clear();
-      allCodes = []; allNames = [];
-
-      let total = 0, masters = 0, members = 0;
-      for (const raw of list) {
-        const r = normalizeRecord(raw);
-        if (!r.name) continue; // se manca il name, scarta
-        if (!r.code) continue; // serve un code risolvibile
-        if (!r.role) continue;
-
-        byCode.set(r.code, r);
-        byName.set(norm(r.name), r);
-        allCodes.push(r.code);
-        allNames.push(r.name);
-        total++;
-        if (r.role === 'MASTER') masters++; else if (r.role === 'MEMBER') members++;
-      }
-
-      let rel = 0;
-      for (const raw of links) {
-        const { member, master } = normalizeLink(raw);
-        if (!member || !master) continue;
-        masterOf.set(member, master);
-        if (!membersOf.has(master)) membersOf.set(master, []);
-        membersOf.get(master).push(member);
-        rel++;
-      }
-
-      statusEl.textContent = `Caricati ${total} controllers (${masters} MASTER, ${members} MEMBER) • Relazioni: ${rel}`;
-    }
-
-    // ======= Autocomplete =======
-    let suggIndex = -1;
-    function highlightMatch(label, term){
-      const q = norm(term);
-      const l = String(label);
-      const i = norm(l).indexOf(q);
-      if (i < 0) return escapeHtml(l);
-      return escapeHtml(l.slice(0,i)) + '<span class="suggest-hl">' +
-             escapeHtml(l.slice(i, i+term.length)) + '</span>' +
-             escapeHtml(l.slice(i+term.length));
-    }
-    function openSuggestions(list, term){
-      const box = $('#suggestions');
-      box.innerHTML = ''; suggIndex = -1;
-      if (!list.length) { box.style.display='none'; return; }
-      for (const label of list) {
-        const item = document.createElement('div');
-        item.className = 'suggest-item'; item.setAttribute('role','option');
-        item.innerHTML = highlightMatch(label, term);
-        item.addEventListener('click', () => { $('#query').value = label; closeSuggestions(); render(label); });
-        box.appendChild(item);
-      }
-      box.style.display = 'block';
-    }
-    function closeSuggestions(){ const b=$('#suggestions'); b.style.display='none'; b.innerHTML=''; suggIndex=-1; }
-    function moveSuggestion(delta){
-      const items = $$('.suggest-item', $('#suggestions')); if (!items.length) return;
-      suggIndex = (suggIndex + delta + items.length) % items.length;
-      items.forEach(el => el.classList.remove('active')); items[suggIndex].classList.add('active'); items[suggIndex].scrollIntoView({ block:'nearest' });
-    }
-    function pickActiveSuggestion(){
-      const items = $$('.suggest-item', $('#suggestions'));
-      if (suggIndex >= 0 && items[suggIndex]) { const label = items[suggIndex].innerText; $('#query').value = label; closeSuggestions(); render(label); return true; }
-      return false;
-    }
-    function findSuggestions(term) {
-      const q = norm(term); if (!q) return [];
-      // priorità ai codici (match prefix+contains), poi i nomi
-      const startsC = allCodes.filter(c => c.startsWith(term));
-      const inclC   = allCodes.filter(c => !c.startsWith(term) && c.includes(term));
-      const startsN = allNames.filter(n => norm(n).startsWith(q));
-      const inclN   = allNames.filter(n => !norm(n).startsWith(q) && norm(n).includes(q));
-      const merged  = [...startsC, ...inclC, ...startsN, ...inclN];
-      const out = []; const seen = new Set();
-      for (const x of merged) if (!seen.has(x)) { out.push(x); seen.add(x); }
-      return out.slice(0, 10);
-    }
-
-    // ======= Render =======
-    function render(raw){
-      const resultsEl = $('#results'); resultsEl.innerHTML = '';
-      const q = String(raw || '').trim();
-      if (!q){ resultsEl.innerHTML = `<div class="not-found">Inserisci un <strong>codice</strong> (es. 0041) o un <strong>name</strong>.</div>`; return; }
-
-      // 1) codice esatto
-      let entry = byCode.get(q);
-
-      // 2) name esatto (case-insensitive)
-      if (!entry) entry = byName.get(norm(q));
-
-      // 3) fallback: name contains
-      if (!entry) {
-        const maybe = allNames.find(n => norm(n).includes(norm(q)));
-        if (maybe) entry = byName.get(norm(maybe));
-      }
-
-      if (!entry){
-        const sugg = findSuggestions(q);
-        resultsEl.innerHTML = `
-          <div class="not-found">
-            Nessun controller trovato per: <strong>${escapeHtml(q)}</strong>.
-            ${sugg.length ? `<div style="margin-top:8px">Forse cercavi: ${
-              sugg.map(s => `#${encodeURIComponent(s)}${escapeHtml(s)}</a>`).join(' • ')
-            }</div>` : ''}
-          </div>`;
-        attachSuggestHandlers(resultsEl);
-        return;
-      }
-
-      if (entry.role === 'MASTER'){
-        const membersCodes = membersOf.get(entry.code) || [];
-        const membersItems = membersCodes.map(c => byCode.get(c)).filter(Boolean);
-        const membersHtml = membersItems.length
-          ? `<div class="list">` + membersItems.map(m => `
-              <div>
-                #${encodeURIComponent(m.code)}<strong>${escapeHtml(`${m.code} — ${m.name}`)}</strong></a>
-                <span style="color:var(--muted)"> • </span>
-                <span>${escapeHtml(m.city ? `${m.city} — ${m.location}` : m.location || '—')}</span>
-              </div>`).join('') + `</div>`
-          : 'Nessun MEMBER associato';
-
-        resultsEl.innerHTML = `
-          <div class="result-card">
-            <div class="title-row">
-              <h2 style="margin:0">${escapeHtml(entry.name)}</h2>
-              <span class="badge master">MASTER</span>
-            </div>
-            <div class="kv"><div class="k">Codice</div><div class="v">${escapeHtml(entry.code)}</div></div>
-            <div class="kv"><div class="k">Posizione (Master)</div><div class="v">${escapeHtml(entry.city ? `${entry.city} — ${entry.location}` : entry.location || '—')}</div></div>
-            <div class="kv"><div class="k">MEMBER associati (${membersItems.length})</div><div class="v">${membersHtml}</div></div>
-          </div>`;
-        attachSuggestHandlers(resultsEl);
-
-      } else if (entry.role === 'MEMBER'){
-        const masterCode = masterOf.get(entry.code);
-        const master = masterCode ? byCode.get(masterCode) : null;
-        const masterLoc = master ? (master.city ? `${master.city} — ${master.location}` : master.location || '—') : 'Non disponibile';
-
-        resultsEl.innerHTML = `
-          <div class="result-card">
-            <div class="title-row">
-              <h2 style="margin:0">${escapeHtml(entry.name)}</h2>
-              <span class="badge member">MEMBER</span>
-            </div>
-            <div class="kv"><div class="k">Codice</div><div class="v">${escapeHtml(entry.code)}</div></div>
-            <div class="kv">
-              <div class="k">Master</div>
-              <div class="v">${master ? `#${encodeURIComponent(master.code)}<strong>${escapeHtml(`${master.code} — ${master.name}`)}</strong></a>` : '—'}</div>
-            </div>
-            <div class="kv"><div class="k">Posizione (Member)</div><div class="v">${escapeHtml(entry.city ? `${entry.city} — ${entry.location}` : entry.location || '—')}</div></div>
-            <div class="kv"><div class="k">Posizione (Master)</div><div class="v">${escapeHtml(masterLoc)}</div></div>
-          </div>`;
-        attachSuggestHandlers(resultsEl);
-
-      } else {
-        resultsEl.innerHTML = `<div class="not-found">Il controller <strong>${escapeHtml(entry.name)}</strong> ha un ruolo non riconosciuto (<code>${escapeHtml(entry.role)}</code>).</div>`;
-      }
-
-      const hash = '#' + encodeURIComponent(entry.code || entry.name);
-      if (location.hash !== hash) history.replaceState(null, '', hash);
-    }
-
-    function attachSuggestHandlers(ctx=document){
-      $$('[data-suggest]', ctx).forEach(el => {
-        el.addEventListener('click', (e) => {
-          e.preventDefault();
-          const val = el.getAttribute('data-suggest') || '';
-          $('#query').value = val;
-          render(val);
+        // Create mapping for Master -> Members
+        controllerData.forEach(c => {
+            if (c.masterId) {
+                if (!masterToMemberMap.has(c.masterId)) {
+                    masterToMemberMap.set(c.masterId, []);
+                }
+                masterToMemberMap.get(c.masterId).push(c);
+            }
         });
-      });
+
+        document.getElementById('results').innerHTML = '<div class="no-results">Dati caricati. Inserisci una ricerca sopra.</div>';
+        
+        // Handle direct URL links (e.g. index.html#0041)
+        const hash = window.location.hash.replace('#', '');
+        if (hash) {
+            document.getElementById('query').value = hash;
+            performSearch(hash);
+        }
+    } catch (err) {
+        document.getElementById('results').innerHTML = `<div class="no-results" style="color:#ef4444">Errore: ${err.message}</div>`;
+    }
+}
+
+// 2. Search Logic
+function performSearch(query) {
+    const q = query.toLowerCase().trim();
+    if (!q) {
+        document.getElementById('results').innerHTML = '<div class="no-results">Inserisci un ID o un nome per vedere i dettagli.</div>';
+        return;
     }
 
-    // ======= Event wiring =======
-    const input = $('#query');
-    const box = $('#suggestions');
-    let debounce, suggIndex = -1;
+    // Prioritize Exact ID match, then partial name match
+    const found = controllerData.find(c => c.id === q) || 
+                  controllerData.find(c => c.name.toLowerCase().includes(q));
 
-    input.addEventListener('input', (e) => {
-      clearTimeout(debounce);
-      const v = e.target.value;
-      debounce = setTimeout(() => {
-        const list = (function findSuggestions(term) {
-          const q = norm(term); if (!q) return [];
-          const startsC = allCodes.filter(c => c.startsWith(term));
-          const inclC   = allCodes.filter(c => !c.startsWith(term) && c.includes(term));
-          const startsN = allNames.filter(n => norm(n).startsWith(q));
-          const inclN   = allNames.filter(n => !norm(n).startsWith(q) && norm(n).includes(q));
-          const merged  = [...startsC, ...inclC, ...startsN, ...inclN];
-          const out = []; const seen = new Set();
-          for (const x of merged) if (!seen.has(x)) { out.push(x); seen.add(x); }
-          return out.slice(0, 10);
-        })(v);
-        list.length ? openSuggestions(list, v) : closeSuggestions();
-      }, 60);
-    });
+    if (found) {
+        renderUI(found);
+    } else {
+        document.getElementById('results').innerHTML = `<div class="no-results">Nessun controller trovato per "${query}"</div>`;
+    }
+}
 
-    input.addEventListener('keydown', (e) => {
-      if (box.style.display === 'block') {
-        if (e.key === 'ArrowDown') { e.preventDefault(); moveSuggestion(+1); return; }
-        if (e.key === 'ArrowUp')   { e.preventDefault(); moveSuggestion(-1); return; }
-        if (e.key === 'Enter')     { if (pickActiveSuggestion()) { e.preventDefault(); return; } }
-        if (e.key === 'Escape')    { closeSuggestions(); return; }
-      }
-      if (e.key === 'Enter') { closeSuggestions(); render(input.value); }
-    });
+// 3. Update the UI
+function renderUI(c) {
+    const container = document.getElementById('results');
+    window.location.hash = c.id; // Update URL for easy sharing
 
-    document.addEventListener('click', (e) => { if (!e.target.closest('.search-box')) closeSuggestions(); });
-    $('#searchBtn').addEventListener('click', () => { closeSuggestions(); render(input.value); });
-    $$('.chip[data-fill]').forEach(chip => chip.addEventListener('click', () => { const v=chip.getAttribute('data-fill')||''; input.value=v; closeSuggestions(); render(v); }));
+    let html = `
+        <div class="result-card">
+            <span class="badge ${c.role.toLowerCase()}">${c.role}</span>
+            <h2 style="margin: 0 0 15px 0; font-size: 1.6rem;">${c.name}</h2>
+            
+            <div class="info-row">
+                <span class="label">📍 Ubicazione Controller</span>
+                <span class="value">${c.city} — ${c.location}</span>
+            </div>
+    `;
 
-    $('#reloadBtn').addEventListener('click', async () => {
-      try { statusEl.textContent = 'Ricarico...'; await loadData({ bust:true }); statusEl.textContent = 'Aggiornato'; if (input.value) render(input.value); }
-      catch (err) { statusEl.textContent = 'Errore'; $('#results').innerHTML = `<div class="not-found">Errore ricarica: ${escapeHtml(err.message || String(err))}</div>`; }
-    });
+    if (c.role === 'MEMBER') {
+        // Find the Master object
+        const master = controllerData.find(m => m.id === c.masterId);
+        html += `
+            <div class="cluster-section">
+                <span class="label">🏢 Master del Cluster</span>
+                <div class="info-row" style="border-color: var(--accent-master); background: rgba(16, 185, 129, 0.05);">
+                    <span class="value" style="font-weight: 700;">${master ? master.name : 'Master ID: ' + c.masterId}</span>
+                    <span class="value" style="font-size: 1rem; color: var(--muted);">${master ? master.location : 'Ubicazione non disponibile'}</span>
+                </div>
+            </div>
+        `;
+    } else {
+        // Find all members for this master
+        const members = masterToMemberMap.get(c.id) || [];
+        html += `
+            <div class="cluster-section">
+                <span class="label">🔗 Cluster Members (${members.length})</span>
+                <div style="margin-top: 12px;">
+                    ${members.length > 0 ? members.map(m => `
+                        <div class="member-list-item">
+                            <span><strong>${m.id}</strong> <span style="color:var(--muted); margin:0 5px;">|</span> ${m.name.split('_').pop()}</span>
+                            <span style="font-size: 0.85rem; color: var(--highlight);">${m.location}</span>
+                        </div>
+                    `).join('') : '<div class="value" style="font-size:0.9rem; color:var(--muted)">Nessun member collegato a questo master.</div>'}
+                </div>
+            </div>
+        `;
+    }
 
-    // ======= Init =======
-    window.addEventListener('DOMContentLoaded', async () => {
-      try {
-        statusEl.textContent = 'Carico dati...';
-        await loadData();
-        if (!byCode.size) statusEl.textContent = 'Nessun dato caricato';
-        else              statusEl.textContent = statusEl.textContent || 'Dati caricati';
+    html += `</div>`;
+    container.innerHTML = html;
+}
 
-        const hash = decodeURIComponent((location.hash || '').replace(/^#/, ''));
-        if (hash) { $('#query').value = hash; render(hash); }
-        else { $('#results').innerHTML = `<div class="not-found">Pronto. Inserisci un <strong>codice</strong> (es. 0041) o seleziona un esempio sopra.</div>`; }
-      } catch (err) {
-        statusEl.textContent = 'Errore';
-        $('#results').innerHTML = `<div class="not-found">Errore nel caricamento dati: ${escapeHtml(err.message || String(err))}</div>`;
-      }
-    });
-  </script>
+// Event Listeners
+document.getElementById('query').addEventListener('input', (e) => performSearch(e.target.value));
+
+// Init
+loadData();
+</script>
+
 </body>
 </html>
