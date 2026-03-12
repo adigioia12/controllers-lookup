@@ -3,370 +3,344 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Controller Lookup</title>
-  <meta name="description" content="Cerca un controller e visualizza ruolo e posizione (MASTER/MEMBER)." />
+  <title>iSTAR Controller Lookup</title>
+  <meta name="description" content="Ricerca controller iSTAR (MASTER/MEMBER) con elenco da CSV su GitHub." />
   <style>
     :root{
-      --bg: #0f172a;              /* slate-900 */
-      --card: #0b1224cc;          /* translucent */
-      --text: #e5e7eb;            /* gray-200 */
-      --muted: #94a3b8;           /* slate-400 */
-      --accent: #60a5fa;          /* blue-400 */
-      --accent-strong:#3b82f6;    /* blue-500 */
-      --success:#22c55e;          /* green-500 */
-      --warning:#f59e0b;          /* amber-500 */
-      --danger:#ef4444;           /* red-500 */
-      --surface:#0b1224;          /* deep surface */
-      --ring:#93c5fd55;           /* focus ring */
-      --chip:#1e293b;             /* slate-800 */
-      --shadow: 0 10px 30px rgba(0,0,0,.35), 0 2px 10px rgba(0,0,0,.25);
+      --bg:#0f172a; --card:#0b1224cc; --text:#e5e7eb; --muted:#94a3b8;
+      --accent:#60a5fa; --accent-strong:#3b82f6; --surface:#0b1224; --chip:#1e293b;
+      --shadow:0 10px 30px rgba(0,0,0,.35),0 2px 8px rgba(0,0,0,.25);
     }
-
-    @media (prefers-color-scheme: light) {
+    @media (prefers-color-scheme: light){
       :root{
-        --bg: #f5f7fb;
-        --surface:#ffffff;
-        --card: #ffffffd9;
-        --text: #0f172a;
-        --muted: #64748b;
-        --chip:#f1f5f9;
-        --shadow: 0 10px 25px rgba(18, 32, 73, .08), 0 2px 8px rgba(18, 32, 73, .06);
+        --bg:#f5f7fb; --surface:#ffffff; --card:#ffffffd9; --text:#0f172a; --muted:#64748b;
+        --chip:#f1f5f9; --shadow:0 10px 25px rgba(18,32,73,.08),0 2px 8px rgba(18,32,73,.06);
       }
     }
-
-    html, body {
-      height: 100%;
-      background: radial-gradient(1000px 800px at 20% 0%, #1e293b 0%, transparent 60%),
-                  radial-gradient(1000px 800px at 80% 100%, #111827 0%, transparent 60%),
-                  var(--bg);
-      color: var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-      margin: 0;
-    }
-
-    .container{
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 24px clamp(16px, 3vw, 32px) 48px;
-      display: grid;
-      gap: 18px;
-      align-items: start;
-    }
-
-    header{
-      margin-top: clamp(16px, 5vh, 64px);
-      text-align: center;
-    }
-
-    h1{
-      font-size: clamp(26px, 4.6vw, 40px);
-      line-height: 1.1;
-      margin: 0 0 8px 0;
-      letter-spacing: -0.02em;
-    }
-
-    .sub{
-      color: var(--muted);
-      font-size: clamp(14px, 2.4vw, 16px);
-      margin: 0 auto;
-      max-width: 60ch;
-    }
-
-    .card{
-      background: var(--card);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(148,163,184,.18);
-      border-radius: 16px;
-      box-shadow: var(--shadow);
-    }
-
-    .search-section{ padding: 16px; }
-
-    .search-box{
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px;
-      align-items: center;
-      padding: 16px;
-      border-radius: 12px;
-      background: var(--surface);
-      border: 1px solid rgba(148,163,184,.25);
-    }
-
-    .search-box input{
-      appearance: none;
-      border: none;
-      outline: none;
-      background: transparent;
-      color: var(--text);
-      font-size: clamp(16px, 2.8vw, 18px);
-      padding: 12px 4px;
-    }
-    .search-box input::placeholder{ color: var(--muted); }
-
-    .search-box button{
-      display: inline-grid;
-      place-items: center;
-      border: none;
-      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-      color: white;
-      padding: 12px 14px;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: transform .08s ease, filter .2s ease;
-    }
-    .search-box button:hover{ filter: brightness(1.05); }
-    .search-box button:active{ transform: translateY(1px) scale(.99); }
-    .search-box button:focus-visible{ outline: 3px solid var(--ring); outline-offset: 2px; }
-
-    .hints{
-      display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 2px 2px 2px; color: var(--muted);
-      font-size: 13px;
-    }
-    .chip{
-      background: var(--chip);
-      border: 1px solid rgba(148,163,184,.25);
-      color: inherit;
-      padding: 6px 10px;
-      border-radius: 999px;
-      cursor: pointer;
-      user-select: none;
-      transition: background .2s ease, transform .06s ease;
-    }
-    .chip:hover{ background: rgba(148,163,184,.15); }
-    .chip:active{ transform: translateY(1px); }
-
-    .results{
-      margin-top: 12px;
-      padding: 14px 16px 18px 16px;
-      display: grid;
-      gap: 12px;
-    }
-
-    .result-card{
-      border: 1px solid rgba(148,163,184,.22);
-      border-radius: 12px;
-      padding: 14px 16px;
-      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.02));
-      display: grid; gap: 8px;
-      animation: fadeIn .18s ease-out;
-    }
-    @keyframes fadeIn { from{opacity:0; transform: translateY(4px)} to{opacity:1; transform:none} }
-
-    .title-row{
-      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-    }
-
-    .badge{
-      font-size: 12px; font-weight: 600; letter-spacing: .02em;
-      padding: 4px 8px; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px;
-      border: 1px solid transparent; color: white;
-    }
-    .badge.master{ background: linear-gradient(135deg, #10b981, #059669); border-color: rgba(16,185,129,.5); }
-    .badge.member{ background: linear-gradient(135deg, #f59e0b, #d97706); border-color: rgba(245,158,11,.5); }
-
-    .kv{ display: grid; gap: 2px; }
-    .kv .k{ color: var(--muted); font-size: 12px; }
-    .kv .v{ font-size: 15px; }
-
-    .not-found{
-      border: 1px dashed rgba(148,163,184,.35);
-      border-radius: 12px; padding: 14px 16px;
-      color: var(--muted);
-    }
-
-    footer{
-      margin-top: 16px; text-align: center; color: var(--muted); font-size: 12px;
-    }
-    footer a{ color: var(--accent-strong); text-decoration: none; }
+    html,body{height:100%;background:
+      radial-gradient(1000px 800px at 20% 0%, #1e293b 0%, transparent 60%),
+      radial-gradient(1000px 800px at 80% 100%, #111827 0%, transparent 60%), var(--bg);
+      color:var(--text);font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      margin:0}
+    .container{max-width:980px;margin:0 auto;padding:24px clamp(16px,3vw,32px) 48px;display:grid;gap:18px}
+    header{text-align:center;margin-top:clamp(16px,5vh,64px)}
+    h1{font-size:clamp(26px,4.6vw,40px);line-height:1.1;margin:0 0 8px;letter-spacing:-.02em}
+    .sub{color:var(--muted);font-size:clamp(14px,2.4vw,16px);margin:0 auto;max-width:68ch}
+    .card{background:var(--card);backdrop-filter:blur(8px);border:1px solid rgba(148,163,184,.18);border-radius:16px;box-shadow:var(--shadow)}
+    .search-section{padding:16px}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .hints{display:flex;flex-wrap:wrap;gap:8px;margin:10px 2px 2px;color:var(--muted);font-size:13px}
+    .chip{background:var(--chip);border:1px solid rgba(148,163,184,.25);color:inherit;padding:6px 10px;border-radius:999px;cursor:pointer;user-select:none;transition:background .2s, transform .06s}
+    .chip:hover{background:rgba(148,163,184,.15)} .chip:active{transform:translateY(1px)}
+    .search-box{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:16px;border-radius:12px;background:var(--surface);border:1px solid rgba(148,163,184,.25)}
+    .search-box input{appearance:none;border:none;outline:none;background:transparent;color:var(--text);font-size:clamp(16px,2.8vw,18px);padding:12px 4px}
+    .btn{display:inline-grid;place-items:center;border:none;background:linear-gradient(135deg,var(--accent),var(--accent-strong));color:#fff;padding:10px 12px;border-radius:10px;cursor:pointer;transition:.08s transform,.2s filter}
+    .btn.secondary{background:transparent;color:var(--accent-strong);border:1px solid rgba(148,163,184,.35)}
+    .btn:hover{filter:brightness(1.05)} .btn:active{transform:translateY(1px) scale(.99)}
+    .results{margin-top:12px;padding:14px 16px 18px;display:grid;gap:12px}
+    .result-card{border:1px solid rgba(148,163,184,.22);border-radius:12px;padding:14px 16px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(0,0,0,.02));display:grid;gap:10px;animation:fadeIn .18s ease-out}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+    .title-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .badge{font-size:12px;font-weight:600;letter-spacing:.02em;padding:4px 8px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid transparent;color:#fff}
+    .badge.master{background:linear-gradient(135deg,#10b981,#059669)}
+    .badge.member{background:linear-gradient(135deg,#f59e0b,#d97706)}
+    .kv{display:grid;gap:2px}.kv .k{color:var(--muted);font-size:12px}.kv .v{font-size:15px}
+    .list{display:grid;gap:6px;margin-top:4px}
+    .not-found{border:1px dashed rgba(148,163,184,.35);border-radius:12px;padding:14px 16px;color:var(--muted)}
+    footer{margin-top:16px;text-align:center;color:var(--muted);font-size:12px}
+    code.k{background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px}
   </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>Controller Lookup</h1>
-      <p class="sub">Inserisci il nome di un controller per sapere se è un <strong>MASTER</strong> o un <strong>MEMBER</strong> e dove si trovano i dispositivi coinvolti.</p>
+      <h1>iSTAR Controller Lookup</h1>
+      <p class="sub">
+        Dati da <code class="k">controller-lookup.csv</code> (o <code class="k">.txt</code>) nella stessa cartella.
+        Cerca per <strong>Name</strong>. I MASTER mostrano la lista dei MEMBER.
+      </p>
     </header>
 
     <section class="card search-section" aria-label="Ricerca controller">
+      <div class="toolbar">
+        <div class="hints">
+          <!-- Esempi: aggiungi qui i nomi che usi più spesso -->
+          <span class="chip" data-fill="(0031)_ITA_MI_iSTAR_21_A*">(0031)_ITA_MI_iSTAR_21_A*</span>
+          <span class="chip" data-fill="(0032)_ITA_MI_iSTAR_22_A">(0032)_ITA_MI_iSTAR_22_A</span>
+          <span class="chip" data-fill="(0028)_ITA_MI_iSTAR_11_A*">(0028)_ITA_MI_iSTAR_11_A*</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button id="reloadBtn" class="btn secondary" title="Ricarica elenco (bypass cache)">Ricarica</button>
+        </div>
+      </div>
+
       <div class="search-box">
-        <input id="query" type="text" inputmode="text" spellcheck="false" placeholder="Es. Controller1" aria-label="Nome controller" autofocus />
-        <button id="searchBtn" title="Cerca" aria-label="Cerca">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <path d="M21 21l-4.35-4.35" stroke="white" stroke-width="2" stroke-linecap="round"/>
-            <circle cx="11" cy="11" r="7" stroke="white" stroke-width="2"/>
+        <input id="query" type="text" inputmode="text" spellcheck="false" placeholder="Es. (0031)_ITA_MI_iSTAR_21_A*" aria-label="Nome controller" autofocus />
+        <button id="searchBtn" class="btn" title="Cerca" aria-label="Cerca">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M21 21l-4.35-4.35" stroke="white" stroke-width="2" stroke-linecap="round"></path>
+            <circle cx="11" cy="11" r="7" stroke="white" stroke-width="2"></circle>
           </svg>
         </button>
       </div>
-      <div class="hints" aria-label="Suggerimenti">
-        <span class="chip" data-fill="Controller1">Controller1</span>
-        <span class="chip" data-fill="Controller2">Controller2</span>
-        <span class="chip" data-fill="Controller3">Controller3</span>
-      </div>
+
       <div id="results" class="results" aria-live="polite"></div>
     </section>
 
     <footer>
-      <p>Per aggiungere nuovi controller, modifica l'oggetto <code>dataset</code> nello script inline.</p>
+      <p>Formato CSV atteso (delimiter <em>;</em>): <code class="k">Citta;Name;Role;Location;Master</code>. UTF‑8 consigliato.</p>
     </footer>
   </div>
 
-  <script>
-    // === Dataset iniziale (puoi estenderlo facilmente) ===
-    // Nota: le chiavi sono normalizzate in minuscolo per ricerche case-insensitive
-    const dataset = {
-      "controller1": { role: "MASTER", location: "Roma — 1º piano, locale 5" },
-      "controller2": { role: "MASTER", location: "Calabria" },
-      "controller3": { role: "MEMBER", location: "Milano", master: "Controller2" }
-    };
+  <script type="module">
+    // ---- Config & helpers ----
+    const CANDIDATES = ['controller-lookup.csv', 'controller-lookup.txt', 'controller-lookup'];
+    const $ = (s, r=document) => r.querySelector(s);
+    const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+    const norm = s => String(s ?? '').trim().toLowerCase();
+    const escapeHtml = str => String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+    const ucRole = r => String(r||'').trim().toUpperCase();
 
-    // === Utility ===
-    const norm = (s) => (s || "").trim().toLowerCase();
+    let records = [];               // { Citta, Name, Role, Location, Master }
+    let byName = new Map();         // lower(Name) -> record
+    let membersByMaster = new Map();// lower(Master) -> array di record
 
-    function findSuggestions(term){
+    async function fetchFirstAvailable({ bust=false } = {}) {
+      const qs = bust ? `?t=${Date.now()}` : '';
+      for (const file of CANDIDATES) {
+        try {
+          const res = await fetch(`./${file}${qs}`, { cache: 'no-store' });
+          if (res.ok) {
+            const text = await res.text();
+            if (text.trim().length) return { file, text };
+          }
+        } catch { /* try next */ }
+      }
+      throw new Error('Nessun file controller-lookup trovato (csv/txt).');
+    }
+
+    // Parser CSV per delimiter ; o , con virgolette e CRLF
+    function parseCSV(text) {
+      const firstLine = text.split(/\r?\n/).find(l => l.trim().length) || '';
+      let delimiter = firstLine.includes(';') ? ';' : (firstLine.includes(',') ? ',' : ';');
+
+      const out = [];
+      let row = [], field = '', inQuotes = false;
+      for (let i=0; i<text.length; i++) {
+        const ch = text[i], next = text[i+1];
+        if (ch === '"' && inQuotes && next === '"') { field += '"'; i++; continue; }
+        if (ch === '"') { inQuotes = !inQuotes; continue; }
+        if (!inQuotes && ch === delimiter) { row.push(field); field=''; continue; }
+        if (!inQuotes && (ch === '\n' || ch === '\r')) {
+          if (ch === '\r' && next === '\n') i++;
+          row.push(field); field='';
+          out.push(row); row=[];
+          continue;
+        }
+        field += ch;
+      }
+      if (field.length || row.length) { row.push(field); out.push(row); }
+
+      const rows = out.filter(r => r.some(v => String(v).trim().length));
+      if (!rows.length) return { headers: [], data: [] };
+
+      const headers = rows[0].map(h => String(h).trim());
+      const data = rows.slice(1).map(cols => {
+        const rec = {};
+        headers.forEach((h, i) => rec[h] = (cols[i] ?? '').trim());
+        return rec;
+      });
+      return { headers, data, delimiter };
+    }
+
+    function indexData(list) {
+      records = [];
+      byName.clear(); membersByMaster.clear();
+
+      for (const r of list) {
+        const Name = r.Name ?? r.name ?? '';
+        const Role = ucRole(r.Role ?? r.role ?? '');
+        const Citta = r.Citta ?? r.City ?? r.citta ?? '';
+        const Location = r.Location ?? r.location ?? '';
+        const Master = r.Master ?? r.master ?? '';
+
+        if (!Name || !Role) continue; // skip righe incomplete
+
+        const rec = { Citta, Name, Role, Location, Master };
+        records.push(rec);
+        byName.set(norm(Name), rec);
+      }
+      // MASTER <- members
+      for (const r of records) {
+        if (r.Role === 'MEMBER' && r.Master) {
+          const mk = norm(r.Master);
+          if (!membersByMaster.has(mk)) membersByMaster.set(mk, []);
+          membersByMaster.get(mk).push(r);
+        }
+      }
+    }
+
+    function findSuggestions(term) {
       const q = norm(term);
-      if(!q) return [];
-      const keys = Object.keys(dataset);
-      // Semplice suggerimento: inizia con / include
+      if (!q) return [];
+      const keys = Array.from(byName.keys());
       const starts = keys.filter(k => k.startsWith(q));
       const includes = keys.filter(k => !k.startsWith(q) && k.includes(q));
-      return [...starts, ...includes].slice(0, 5).map(k => ({ key:k, label: properCase(k) }));
+      return [...starts, ...includes].slice(0, 8).map(k => byName.get(k)?.Name ?? k);
     }
 
-    function properCase(key){
-      // Ripristina capitalizzazione tipo "Controller3"
-      return key.replace(/^(controller)(\d+)/i, (_, a, n) => a.charAt(0).toUpperCase() + a.slice(1).toLowerCase() + n);
-    }
-
-    function renderResult(raw){
-      const resultsEl = document.getElementById('results');
-      resultsEl.innerHTML = '';
-
-      const q = norm(raw);
-      if(!q){
-        resultsEl.innerHTML = `<div class="not-found">Inserisci un nome, ad esempio <strong>Controller1</strong>.</div>`;
-        return;
-      }
-
-      const entry = dataset[q];
-      if(!entry){
-        const sugg = findSuggestions(q);
-        resultsEl.innerHTML = `
-          <div class="not-found">
-            Nessun controller trovato per: <strong>${escapeHtml(raw)}</strong>.
-            ${sugg.length ? `<div style="margin-top:8px">Forse cercavi: ${sugg.map(s => `<a class="chip" href="#${encodeURIComponent(s.label)}" data-suggest="${s.label}">${s.label}</a>`).join(' ')}</div>` : ''}
-          </div>
-        `;
-        attachSuggestHandlers();
-        return;
-      }
-
-      const title = properCase(q);
-
-      // Costruisci la scheda risultato a seconda del ruolo
-      if(entry.role === 'MASTER'){
-        resultsEl.innerHTML = `
-          <div class="result-card">
-            <div class="title-row">
-              <h2 style="margin:0">${title}</h2>
-              <span class="badge master" title="Ruolo: MASTER">MASTER</span>
-            </div>
-            <div class="kv">
-              <div class="k">Posizione</div>
-              <div class="v">${escapeHtml(entry.location || '—')}</div>
-            </div>
-          </div>
-        `;
-      } else if(entry.role === 'MEMBER'){
-        const masterName = entry.master || '';
-        const masterKey = norm(masterName);
-        const master = dataset[masterKey];
-        resultsEl.innerHTML = `
-          <div class="result-card">
-            <div class="title-row">
-              <h2 style="margin:0">${title}</h2>
-              <span class="badge member" title="Ruolo: MEMBER">MEMBER</span>
-            </div>
-            <div class="kv">
-              <div class="k">Master</div>
-              <div class="v">${masterName ? `<a href="#${encodeURIComponent(masterName)}" data-suggest="${escapeHtml(masterName)}">${escapeHtml(masterName)}</a>` : '—'}</div>
-            </div>
-            <div class="kv">
-              <div class="k">Posizione (Member)</div>
-              <div class="v">${escapeHtml(entry.location || '—')}</div>
-            </div>
-            <div class="kv">
-              <div class="k">Posizione (Master)</div>
-              <div class="v">${escapeHtml((master && master.location) ? master.location : 'Non disponibile')}</div>
-            </div>
-          </div>
-        `;
-        attachSuggestHandlers();
-      } else {
-        resultsEl.innerHTML = `<div class="not-found">Il controller <strong>${escapeHtml(title)}</strong> ha un ruolo non riconosciuto.</div>`;
-      }
-    }
-
-    function escapeHtml(str){
-      return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[s]));
-    }
-
-    function attachSuggestHandlers(){
-      // Link suggeriti che riempiono la ricerca
-      document.querySelectorAll('[data-suggest]').forEach(el => {
+    function attachSuggestHandlers(ctx=document) {
+      $$('[data-suggest]', ctx).forEach(el => {
         el.addEventListener('click', (e) => {
           e.preventDefault();
-          const val = el.getAttribute('data-suggest');
-          document.getElementById('query').value = val;
+          const val = el.getAttribute('data-suggest') || '';
+          $('#query').value = val;
           updateHash(val);
           renderResult(val);
         }, { once: true });
       });
     }
 
-    function updateHash(v){
-      const hash = '#' + encodeURIComponent(v);
-      if(location.hash !== hash){
-        history.replaceState(null, '', hash);
+    function updateHash(v) {
+      const hash = '#' + encodeURIComponent(v || '');
+      if (location.hash !== hash) history.replaceState(null, '', hash);
+    }
+
+    function renderResult(raw) {
+      const resultsEl = $('#results');
+      resultsEl.innerHTML = '';
+      const q = norm(raw);
+      if (!q) {
+        resultsEl.innerHTML = `<div class="not-found">Inserisci un <strong>Name</strong> esatto dal CSV, es. <strong>(0031)_ITA_MI_iSTAR_21_A*</strong>.</div>`;
+        return;
+      }
+      const entry = byName.get(q);
+      if (!entry) {
+        const sugg = findSuggestions(q);
+        resultsEl.innerHTML = `
+          <div class="not-found">
+            Nessun controller trovato per: <strong>${escapeHtml(raw)}</strong>.
+            ${sugg.length ? `<div style="margin-top:8px">Forse cercavi: ${
+              sugg.map(s => `#${encodeURIComponent(s)}${escapeHtml(s)}</a>`).join(' ')
+            }</div>` : ''}
+          </div>`;
+        attachSuggestHandlers(resultsEl);
+        return;
+      }
+
+      if (entry.Role === 'MASTER') {
+        const members = membersByMaster.get(norm(entry.Name)) || [];
+        const membersHtml = members.length
+          ? `<div class="list">` + members.map(m => `
+              <div>
+                #${encodeURIComponent(m.Name)}<strong>${escapeHtml(m.Name)}</strong></a>
+                <span style="color:var(--muted)"> • </span>
+                <span>${escapeHtml(m.Citta ? `${m.Citta} — ${m.Location}` : m.Location || '—')}</span>
+              </div>
+            `).join('') + `</div>`
+          : 'Nessun MEMBER associato';
+
+        resultsEl.innerHTML = `
+          <div class="result-card">
+            <div class="title-row">
+              <h2 style="margin:0">${escapeHtml(entry.Name)}</h2>
+              <span class="badge master" title="Ruolo: MASTER">MASTER</span>
+            </div>
+            <div class="kv">
+              <div class="k">Posizione (Master)</div>
+              <div class="v">${escapeHtml(entry.Citta ? `${entry.Citta} — ${entry.Location}` : entry.Location || '—')}</div>
+            </div>
+            <div class="kv">
+              <div class="k">MEMBER associati (${members.length})</div>
+              <div class="v">${membersHtml}</div>
+            </div>
+          </div>
+        `;
+        attachSuggestHandlers(resultsEl);
+
+      } else if (entry.Role === 'MEMBER') {
+        const masterName = entry.Master || '';
+        const master = byName.get(norm(masterName));
+        const masterLoc = master ? (master.Citta ? `${master.Citta} — ${master.Location}` : master.Location || '—') : 'Non disponibile';
+
+        resultsEl.innerHTML = `
+          <div class="result-card">
+            <div class="title-row">
+              <h2 style="margin:0">${escapeHtml(entry.Name)}</h2>
+              <span class="badge member" title="Ruolo: MEMBER">MEMBER</span>
+            </div>
+            <div class="kv">
+              <div class="k">Master</div>
+              <div class="v">${masterName ? `#${encodeURIComponent(masterName)}${escapeHtml(masterName)}</a>` : '—'}</div>
+            </div>
+            <div class="kv">
+              <div class="k">Posizione (Member)</div>
+              <div class="v">${escapeHtml(entry.Citta ? `${entry.Citta} — ${entry.Location}` : entry.Location || '—')}</div>
+            </div>
+            <div class="kv">
+              <div class="k">Posizione (Master)</div>
+              <div class="v">${escapeHtml(masterLoc)}</div>
+            </div>
+          </div>
+        `;
+        attachSuggestHandlers(resultsEl);
+
+      } else {
+        resultsEl.innerHTML = `<div class="not-found">Il controller <strong>${escapeHtml(entry.Name)}</strong> ha un ruolo non riconosciuto (<code>${escapeHtml(entry.Role)}</code>).</div>`;
       }
     }
 
-    // === Event wiring ===
-    const input = document.getElementById('query');
-    const btn = document.getElementById('searchBtn');
+    async function loadData({ bust=false } = {}) {
+      const { file, text } = await fetchFirstAvailable({ bust });
+      const { headers, data, delimiter } = parseCSV(text);
+      const needed = ['Name','Role']; // minime
+      const missing = needed.filter(h => !headers.includes(h));
+      if (missing.length) throw new Error(`CSV non valido. Mancano colonne: ${missing.join(', ')}`);
+      indexData(data);
+      return { file, delimiter };
+    }
 
-    btn.addEventListener('click', () => {
-      const v = input.value;
+    // --- Events ---
+    $('#searchBtn').addEventListener('click', () => {
+      const v = $('#query').value;
       updateHash(v);
       renderResult(v);
     });
-
-    input.addEventListener('keydown', (e) => {
-      if(e.key === 'Enter'){
-        const v = input.value;
+    $('#query').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const v = e.currentTarget.value;
         updateHash(v);
         renderResult(v);
       }
     });
-
-    // Chip per autocompilare
-    document.querySelectorAll('.chip[data-fill]').forEach(chip => {
+    $$('.chip[data-fill]').forEach(chip => {
       chip.addEventListener('click', () => {
-        const v = chip.getAttribute('data-fill');
-        input.value = v;
+        const v = chip.getAttribute('data-fill') || '';
+        $('#query').value = v;
         updateHash(v);
         renderResult(v);
       });
     });
+    $('#reloadBtn').addEventListener('click', async () => {
+      try {
+        const { file, delimiter } = await loadData({ bust:true });
+        const v = $('#query').value;
+        renderResult(v);
+        console.info(`Dati ricaricati da ${file} (delimiter: ${delimiter}).`);
+      } catch (err) {
+        $('#results').innerHTML = `<div class="not-found">Errore ricarica CSV: ${escapeHtml(err.message || String(err))}</div>`;
+      }
+    });
 
-    // Caricamento da hash per link condivisibili (#Controller3)
-    window.addEventListener('DOMContentLoaded', () => {
-      const fromHash = decodeURIComponent((location.hash || '').replace(/^#/, ''));
-      if(fromHash){
-        input.value = fromHash;
-        renderResult(fromHash);
-      } else {
-        renderResult('');
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const { file, delimiter } = await loadData();
+        const fromHash = decodeURIComponent((location.hash || '').replace(/^#/, ''));
+        if (fromHash) $('#query').value = fromHash;
+        renderResult(fromHash || '');
+        console.info(`Dati caricati da ${file} (delimiter: ${delimiter}).`);
+      } catch (err) {
+        $('#results').innerHTML = `<div class="not-found">Errore nel caricamento dati: ${escapeHtml(err.message || String(err))}</div>`;
       }
     });
   </script>
