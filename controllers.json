@@ -1,1 +1,104 @@
+{
+  "controllers": [
+    {
+      "code": "0041",
+      "name": "(0041)_ITA_MI_iSTAR_T01_A*",
+      "role": "MASTER",
+      "city": "Milano BA",
+      "location": "0° piano BA — Locale Rack AT006"
+    },
+    {
+      "code": "0042",
+      "name": "(0042)_ITA_MI_iSTAR_T02_A",
+      "role": "MEMBER",
+      "city": "Milano BA",
+      "location": "0° piano BA — Locale Rack AT011"
+    },
+    {
+      "code": "0043",
+      "name": "(0043)_ITA_MI_iSTAR_T03_A",
+      "role": "MEMBER",
+      "city": "Milano BA",
+      "location": "0° piano BA — Locale Rack AT011"
+    },
 
+    {
+      "code": "0028",
+      "name": "(0028)_ITA_MI_iSTAR_11_A*",
+      "role": "MASTER",
+      "city": "Milano BA",
+      "location": "1° piano BA — Locale Rack A126"
+    },
+    {
+      "code": "0029",
+      "name": "(0029)_ITA_MI_iSTAR_12_A",
+      "role": "MEMBER",
+      "city": "Milano BA",
+      "location": "1° piano BA — Locale Rack A126"
+    },
+    {
+      "code": "0030",
+      "name": "(0030)_ITA_MI_iSTAR_13_A",
+      "role": "MEMBER",
+      "city": "Milano BA",
+      "location": "1° piano BA — P1 Disimpegno Core"
+    },
+
+    {
+      "code": "0031",
+      "name": "(0031)_ITA_MI_iSTAR_21_A*",
+      "role": "MASTER",
+      "city": "Milano BA",
+      "location": "2° piano BA — Locale Rack A227"
+    },
+    {
+      "code": "0032",
+      "name": "(0032)_ITA_MI_iSTAR_22_A",
+      "role": "MEMBER",
+      "city": "Milano BA",
+      "location": "2° piano BA — Locale Rack A227"
+    },
+    {
+      "code": "0033",
+      "name": "(0033)_ITA_MI_iSTAR_23_A",
+      "role": "MEMBER",
+      "city": "Milano BA",
+      "location": "2° piano BA — Locale Rack A227"
+    },
+
+    {
+      "code": "0099",
+      "name": "(0099)_ITA_MI_iSTAR_01_FC*",
+      "role": "MASTER",
+      "city": "Milano FC",
+      "location": "-1° piano FC — Locale Q.E. FC"
+    },
+    {
+      "code": "0101",
+      "name": "(0101)_ITA_MI_iSTAR_03_FC",
+      "role": "MEMBER",
+      "city": "Milano FC",
+      "location": "-1° piano FC — Locale Q.E. FC"
+    },
+    {
+      "code": "0102",
+      "name": "(0102)_ITA_MI_iSTAR_04_FC",
+      "role": "MEMBER",
+      "city": "Milano FC",
+      "location": "-1° piano FC — Locale Q.E. FC"
+    }
+  ],
+  "links": [
+    { "member": "0042", "master": "0041" },
+    { "member": "0043", "master": "0041" },
+
+    { "member": "0029", "master": "0028" },
+    { "member": "0030", "master": "0028" },
+
+    { "member": "0032", "master": "0031" },
+    { "member": "0033", "master": "0031" },
+
+    { "member": "0101", "master": "0099" },
+    { "member": "0102", "master": "0099" }
+  ]
+}
