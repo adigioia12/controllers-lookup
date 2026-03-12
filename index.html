@@ -344,27 +344,217 @@
       }
     });
   </script>
-  <script>
-  fetch("controller-lookup.txt")
-    .then(response => {
-      if (!response.ok) {
-        throw new Error("File non trovato");
-      }
-      return response.text();
-    })
-    .then(text => {
-      console.log("FILE CARICATO CORRETTAMENTE:");
-      console.log(text);
+<script>
+/* ===========================
+   CONFIG
+=========================== */
+const DATA_FILE = "controller-lookup.txt";
 
-      // lo mostriamo anche a video per prova
-      document.getElementById("results").innerHTML =
-        "<pre>" + text.substring(0, 500) + "</pre>";
-    })
-    .catch(err => {
-      console.error(err);
-      document.getElementById("results").innerHTML =
-        "<p style='color:red'>Errore nel caricamento del file</p>";
-    });
+/* ===========================
+   UTILS
+=========================== */
+const $ = s => document.querySelector(s);
+const norm = s => (s ?? "").toString().trim().toLowerCase();
+const escapeHtml = s =>
+  s.replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;",
+    '"': "&quot;", "'": "&#39;"
+  }[c]));
+
+/* ===========================
+   DATA STRUCTURES
+=========================== */
+let byName = new Map();            // name -> record
+let membersByMaster = new Map();   // master -> [members]
+let allNames = [];                // per autocomplete
+
+/* ===========================
+   CSV PARSER (;)
+=========================== */
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  const headers = lines.shift().split(";").map(h => h.trim());
+
+  return lines.map(line => {
+    const cols = [];
+    let cur = "", inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { inQuotes = !inQuotes; continue; }
+      if (ch === ";" && !inQuotes) {
+        cols.push(cur.trim());
+        cur = "";
+      } else cur += ch;
+    }
+    cols.push(cur.trim());
+
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = cols[i] ?? "");
+    return obj;
+  });
+}
+
+/* ===========================
+   LOAD + INDEX
+=========================== */
+async function loadData() {
+  const res = await fetch(DATA_FILE);
+  if (!res.ok) throw new Error("Impossibile caricare il file dati");
+
+  const text = await res.text();
+  const rows = parseCSV(text);
+
+  byName.clear();
+  membersByMaster.clear();
+  allNames = [];
+
+  rows.forEach(r => {
+    if (!r.Name || !r.Role) return;
+
+    const rec = {
+      name: r.Name.trim(),
+      role: r.Role.trim().toUpperCase(),
+      city: r.Citta?.trim() || "",
+      location: r.Location?.trim() || "",
+      master: r.Master?.trim() || ""
+    };
+
+    byName.set(norm(rec.name), rec);
+    allNames.push(rec.name);
+  });
+
+  byName.forEach(r => {
+    if (r.role === "MEMBER" && r.master) {
+      const k = norm(r.master);
+      if (!membersByMaster.has(k)) membersByMaster.set(k, []);
+      membersByMaster.get(k).push(r);
+    }
+  });
+}
+
+/* ===========================
+   AUTOCOMPLETE
+=========================== */
+function updateSuggestions(value) {
+  const box = $("#suggestions");
+  box.innerHTML = "";
+  if (!value) return;
+
+  const q = norm(value);
+  const matches = allNames
+    .filter(n => norm(n).includes(q))
+    .slice(0, 8);
+
+  matches.forEach(name => {
+    const div = document.createElement("div");
+    div.className = "suggestion";
+    div.textContent = name;
+    div.onclick = () => {
+      $("#query").value = name;
+      box.innerHTML = "";
+      render(name);
+    };
+    box.appendChild(div);
+  });
+}
+
+/* ===========================
+   RENDER RESULT
+=========================== */
+function render(raw) {
+  const res = $("#results");
+  res.innerHTML = "";
+
+  const entry = byName.get(norm(raw));
+  if (!entry) {
+    res.innerHTML = `<div class="not-found">Nessun controller trovato</div>`;
+    return;
+  }
+
+  if (entry.role === "MASTER") {
+    const members = membersByMaster.get(norm(entry.name)) || [];
+
+    res.innerHTML = `
+      <div class="result-card">
+        <h2>${escapeHtml(entry.name)}</h2>
+        <span class="badge master">MASTER</span>
+
+        <p><strong>Posizione:</strong>
+        ${escapeHtml(entry.city)} — ${escapeHtml(entry.location)}</p>
+
+        <h3>MEMBER associati (${members.length})</h3>
+        ${members.length ? `
+          <ul>
+            ${members.map(m => `
+              <li>
+                <a href="#${encodeURIComponent(m.name)}"
+                   onclick="render('${escapeHtml(m.name)}')">
+                  ${escapeHtml(m.name)}
+                </a>
+                — ${escapeHtml(m.location)}
+              </li>
+            `).join("")}
+          </ul>` : "<p>Nessun MEMBER</p>"}
+      </div>`;
+  }
+
+  if (entry.role === "MEMBER") {
+    const master = byName.get(norm(entry.master));
+
+    res.innerHTML = `
+      <div class="result-card">
+        <h2>${escapeHtml(entry.name)}</h2>
+        <span class="badge member">MEMBER</span>
+
+        <p><strong>Posizione (Member):</strong>
+        ${escapeHtml(entry.city)} — ${escapeHtml(entry.location)}</p>
+
+        <p><strong>Master:</strong>
+        ${master
+          ? `<a href="#${encodeURIComponent(master.name)}"
+               onclick="render('${escapeHtml(master.name)}')">
+               ${escapeHtml(master.name)}</a>
+             — ${escapeHtml(master.location)}`
+          : "Non disponibile"}
+        </p>
+      </div>`;
+  }
+
+  location.hash = encodeURIComponent(entry.name);
+}
+
+/* ===========================
+   EVENTS
+=========================== */
+$("#query").addEventListener("input", e =>
+  updateSuggestions(e.target.value)
+);
+
+$("#query").addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    $("#suggestions").innerHTML = "";
+    render(e.target.value);
+  }
+});
+
+$("#searchBtn").addEventListener("click", () =>
+  render($("#query").value)
+);
+
+/* ===========================
+   INIT
+=========================== */
+loadData().then(() => {
+  const fromHash = decodeURIComponent(location.hash.replace("#", ""));
+  if (fromHash) {
+    $("#query").value = fromHash;
+    render(fromHash);
+  }
+}).catch(err => {
+  $("#results").innerHTML =
+    `<p style="color:red">${err.message}</p>`;
+});
 </script>
 </body>
 </html>
