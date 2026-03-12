@@ -4,8 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>iSTAR Controller Lookup</title>
-  <meta name="description" content="Ricerca iSTAR MASTER/MEMBER con dati da JSON (anagrafica + relazioni)."/>
-
+  <meta name="description" content="Ricerca iSTAR MASTER/MEMBER con dati JSON (anagrafica + relazioni)."/>
   <style>
     :root{
       --bg:#0f172a; --card:#0b1224cc; --text:#e5e7eb; --muted:#94a3b8;
@@ -68,29 +67,24 @@
   <div class="container">
     <header>
       <h1>iSTAR Controller Lookup</h1>
-      <p class="sub">
-        Dati da <code class="k">controllers.json</code> (anagrafica + relazioni). Cerca per
-        <strong>codice</strong> (es. <em>0041</em>) o per <strong>name</strong> completo (es. <em>(0041)_ITA_MI_iSTAR_T01_A*</em>).
-      </p>
+      <p class="sub">Dati da <code class="k">controllers.json</code> (anagrafica + relazioni). Cerca per <strong>codice</strong> (es. <em>0041</em>) o per <strong>name</strong>.</p>
     </header>
 
     <section class="card search-section" aria-label="Ricerca controller">
       <div class="toolbar">
-        <div class="hints" aria-label="Esempi rapidi">
+        <div class="hints">
           <span class="chip" data-fill="0041">0041</span>
           <span class="chip" data-fill="0031">0031</span>
           <span class="chip" data-fill="0028">0028</span>
         </div>
         <div style="display:flex;gap:8px;align-items:center">
-          <button id="reloadBtn" class="btn secondary" title="Ricarica elenco (bypass cache)">Ricarica</button>
+          <button id="reloadBtn" class="btn secondary" title="Ricarica (cache-bust)">Ricarica</button>
           <span id="status" class="status" role="status" aria-live="polite"></span>
         </div>
       </div>
 
       <div class="search-box">
-        <input id="query" type="text" inputmode="text" spellcheck="false"
-               placeholder="Es. 0041 oppure (0041)_ITA_MI_iSTAR_T01_A*"
-               aria-label="Codice o Nome controller" autofocus />
+        <input id="query" type="text" spellcheck="false" placeholder="Es. 0041 oppure (0041)_ITA_MI_iSTAR_T01_A*" aria-label="Codice o Name" autofocus>
         <button id="searchBtn" class="btn" title="Cerca" aria-label="Cerca">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M21 21l-4.35-4.35" stroke="white" stroke-width="2" stroke-linecap="round"></path>
@@ -104,7 +98,7 @@
     </section>
 
     <footer>
-      <p>Per aggiornare: modifica <code class="k">controllers.json</code> e premi <strong>Ricarica</strong>.</p>
+      <p>Modifica <code class="k">controllers.json</code> e premi <strong>Ricarica</strong> per vedere le modifiche.</p>
     </footer>
   </div>
 
@@ -120,18 +114,51 @@
     const statusEl = $('#status');
 
     // ======= Dati =======
-    let byCode = new Map();         // code -> record
-    let byName = new Map();         // lower(name) -> record
+    let byCode = new Map();         // code -> rec
+    let byName = new Map();         // lower(name) -> rec
     let masterOf = new Map();       // memberCode -> masterCode
     let membersOf = new Map();      // masterCode -> [memberCodes]
-    let allCodes = [];              // per autocomplete (priorità)
-    let allNames = [];              // per fallback
+    let allCodes = [];
+    let allNames = [];
 
-    // ======= Load JSON =======
+    // Normalizza nome campi e ricava code da name se manca
+    function normalizeRecord(r){
+      const get = (...keys) => {
+        for (const k of keys) {
+          if (r[k] !== undefined && r[k] !== null && String(r[k]).trim() !== '') return String(r[k]).trim();
+        }
+        return '';
+      };
+      let code = get('code','Code','codice','Codice','id','Id');
+      const name = get('name','Name','nome','Nome');
+      const role = get('role','Role','tipologia','Tipologia').toUpperCase();
+      const city = get('city','City','citta','Citta');
+      const location = get('location','Location','ubicazione','Ubicazione');
+
+      // Se manca code, prova ad estrarlo dal name: (dddd)
+      if (!code && name) {
+        const m = name.match(/\((\d{3,6})\)/);
+        if (m) code = m[1];
+      }
+      return { code, name, role, city, location };
+    }
+
+    function normalizeLink(l){
+      const get = (...keys) => {
+        for (const k of keys) {
+          if (l[k] !== undefined && l[k] !== null && String(l[k]).trim() !== '') return String(l[k]).trim();
+        }
+        return '';
+      };
+      const member = get('member','Member','figlio','Figlio');
+      const master = get('master','Master','padre','Padre');
+      return { member, master };
+    }
+
     async function loadData({ bust=false } = {}) {
       const url = bust ? `${DATA_URL}?t=${Date.now()}` : DATA_URL;
       const res = await fetch(url, { cache: 'no-store' });
-      if (!res.ok) throw new Error('Impossibile caricare "controllers.json"');
+      if (!res.ok) throw new Error('Impossibile caricare "controllers.json" (HTTP ' + res.status + ')');
       const data = await res.json();
       if (!data || !Array.isArray(data.controllers) || !Array.isArray(data.links)) {
         throw new Error('Formato JSON non valido: servono "controllers" (array) e "links" (array).');
@@ -139,58 +166,40 @@
       indexData(data.controllers, data.links);
     }
 
-    // ======= Indicizzazione =======
     function indexData(list, links) {
       byCode.clear(); byName.clear(); masterOf.clear(); membersOf.clear();
       allCodes = []; allNames = [];
 
-      // Anagrafica
-      for (const r of list) {
-        if (!r || !r.code || !r.name || !r.role) continue;
-        const rec = {
-          code: String(r.code),
-          name: String(r.name),
-          role: String(r.role).toUpperCase(),
-          city: String(r.city || ''),
-          location: String(r.location || '')
-        };
-        byCode.set(rec.code, rec);
-        byName.set(norm(rec.name), rec);
-        allCodes.push(rec.code);
-        allNames.push(rec.name);
+      let total = 0, masters = 0, members = 0;
+      for (const raw of list) {
+        const r = normalizeRecord(raw);
+        if (!r.name) continue; // se manca il name, scarta
+        if (!r.code) continue; // serve un code risolvibile
+        if (!r.role) continue;
+
+        byCode.set(r.code, r);
+        byName.set(norm(r.name), r);
+        allCodes.push(r.code);
+        allNames.push(r.name);
+        total++;
+        if (r.role === 'MASTER') masters++; else if (r.role === 'MEMBER') members++;
       }
 
-      // Relazioni (member <-> master) per codice
-      for (const link of links) {
-        if (!link || !link.member || !link.master) continue;
-        const m = String(link.member), M = String(link.master);
-        masterOf.set(m, M);
-        if (!membersOf.has(M)) membersOf.set(M, []);
-        membersOf.get(M).push(m);
+      let rel = 0;
+      for (const raw of links) {
+        const { member, master } = normalizeLink(raw);
+        if (!member || !master) continue;
+        masterOf.set(member, master);
+        if (!membersOf.has(master)) membersOf.set(master, []);
+        membersOf.get(master).push(member);
+        rel++;
       }
+
+      statusEl.textContent = `Caricati ${total} controllers (${masters} MASTER, ${members} MEMBER) • Relazioni: ${rel}`;
     }
 
     // ======= Autocomplete =======
     let suggIndex = -1;
-    function findSuggestions(term) {
-      const q = norm(term);
-      if (!q) return [];
-
-      // 1) Priorità ai codici
-      const startsCodes = allCodes.filter(c => c.startsWith(term));
-      const includesCodes = allCodes.filter(c => !c.startsWith(term) && c.includes(term));
-
-      // 2) Poi i nomi (case-insensitive)
-      const startsNames = allNames.filter(n => norm(n).startsWith(q));
-      const includesNames = allNames.filter(n => !norm(n).startsWith(q) && norm(n).includes(q));
-
-      // De-duplica mantenendo l’ordine: codici prima, poi nomi
-      const merged = [...startsCodes, ...includesCodes, ...startsNames, ...includesNames];
-      const out = [];
-      const seen = new Set();
-      for (const x of merged) { if (!seen.has(x)) { out.push(x); seen.add(x); } }
-      return out.slice(0, 10);
-    }
     function highlightMatch(label, term){
       const q = norm(term);
       const l = String(label);
@@ -202,68 +211,54 @@
     }
     function openSuggestions(list, term){
       const box = $('#suggestions');
-      box.innerHTML = '';
-      suggIndex = -1;
+      box.innerHTML = ''; suggIndex = -1;
       if (!list.length) { box.style.display='none'; return; }
-      list.forEach(label => {
+      for (const label of list) {
         const item = document.createElement('div');
-        item.className = 'suggest-item';
-        item.setAttribute('role','option');
+        item.className = 'suggest-item'; item.setAttribute('role','option');
         item.innerHTML = highlightMatch(label, term);
-        item.addEventListener('click', () => {
-          $('#query').value = label;
-          closeSuggestions();
-          render(label);
-        });
+        item.addEventListener('click', () => { $('#query').value = label; closeSuggestions(); render(label); });
         box.appendChild(item);
-      });
+      }
       box.style.display = 'block';
     }
-    function closeSuggestions(){
-      const box = $('#suggestions');
-      box.style.display = 'none';
-      box.innerHTML = '';
-      suggIndex = -1;
-    }
+    function closeSuggestions(){ const b=$('#suggestions'); b.style.display='none'; b.innerHTML=''; suggIndex=-1; }
     function moveSuggestion(delta){
-      const box = $('#suggestions');
-      const items = $$('.suggest-item', box);
-      if (!items.length) return;
+      const items = $$('.suggest-item', $('#suggestions')); if (!items.length) return;
       suggIndex = (suggIndex + delta + items.length) % items.length;
-      items.forEach(el => el.classList.remove('active'));
-      items[suggIndex].classList.add('active');
-      items[suggIndex].scrollIntoView({ block:'nearest' });
+      items.forEach(el => el.classList.remove('active')); items[suggIndex].classList.add('active'); items[suggIndex].scrollIntoView({ block:'nearest' });
     }
     function pickActiveSuggestion(){
-      const box = $('#suggestions');
-      const items = $$('.suggest-item', box);
-      if (suggIndex >= 0 && items[suggIndex]) {
-        const label = items[suggIndex].innerText;
-        $('#query').value = label;
-        closeSuggestions();
-        render(label);
-        return true;
-      }
+      const items = $$('.suggest-item', $('#suggestions'));
+      if (suggIndex >= 0 && items[suggIndex]) { const label = items[suggIndex].innerText; $('#query').value = label; closeSuggestions(); render(label); return true; }
       return false;
+    }
+    function findSuggestions(term) {
+      const q = norm(term); if (!q) return [];
+      // priorità ai codici (match prefix+contains), poi i nomi
+      const startsC = allCodes.filter(c => c.startsWith(term));
+      const inclC   = allCodes.filter(c => !c.startsWith(term) && c.includes(term));
+      const startsN = allNames.filter(n => norm(n).startsWith(q));
+      const inclN   = allNames.filter(n => !norm(n).startsWith(q) && norm(n).includes(q));
+      const merged  = [...startsC, ...inclC, ...startsN, ...inclN];
+      const out = []; const seen = new Set();
+      for (const x of merged) if (!seen.has(x)) { out.push(x); seen.add(x); }
+      return out.slice(0, 10);
     }
 
     // ======= Render =======
     function render(raw){
-      const resultsEl = $('#results');
-      resultsEl.innerHTML = '';
+      const resultsEl = $('#results'); resultsEl.innerHTML = '';
       const q = String(raw || '').trim();
-      if (!q){
-        resultsEl.innerHTML = `<div class="not-found">Inserisci un <strong>codice</strong> (es. 0041) o un <strong>name</strong> completo.</div>`;
-        return;
-      }
+      if (!q){ resultsEl.innerHTML = `<div class="not-found">Inserisci un <strong>codice</strong> (es. 0041) o un <strong>name</strong>.</div>`; return; }
 
-      // 1) Ricerca per codice (preferita)
+      // 1) codice esatto
       let entry = byCode.get(q);
 
-      // 2) Se non trovato, prova per nome completo (case-insensitive)
+      // 2) name esatto (case-insensitive)
       if (!entry) entry = byName.get(norm(q));
 
-      // 3) Se ancora non trovato, prova fallback “contains” sui nomi
+      // 3) fallback: name contains
       if (!entry) {
         const maybe = allNames.find(n => norm(n).includes(norm(q)));
         if (maybe) entry = byName.get(norm(maybe));
@@ -282,13 +277,9 @@
         return;
       }
 
-      // Render MASTER o MEMBER
       if (entry.role === 'MASTER'){
         const membersCodes = membersOf.get(entry.code) || [];
-        const membersItems = membersCodes
-          .map(c => byCode.get(c))
-          .filter(Boolean);
-
+        const membersItems = membersCodes.map(c => byCode.get(c)).filter(Boolean);
         const membersHtml = membersItems.length
           ? `<div class="list">` + membersItems.map(m => `
               <div>
@@ -302,13 +293,12 @@
           <div class="result-card">
             <div class="title-row">
               <h2 style="margin:0">${escapeHtml(entry.name)}</h2>
-              <span class="badge master" title="Ruolo: MASTER">MASTER</span>
+              <span class="badge master">MASTER</span>
             </div>
             <div class="kv"><div class="k">Codice</div><div class="v">${escapeHtml(entry.code)}</div></div>
             <div class="kv"><div class="k">Posizione (Master)</div><div class="v">${escapeHtml(entry.city ? `${entry.city} — ${entry.location}` : entry.location || '—')}</div></div>
             <div class="kv"><div class="k">MEMBER associati (${membersItems.length})</div><div class="v">${membersHtml}</div></div>
-          </div>
-        `;
+          </div>`;
         attachSuggestHandlers(resultsEl);
 
       } else if (entry.role === 'MEMBER'){
@@ -320,28 +310,22 @@
           <div class="result-card">
             <div class="title-row">
               <h2 style="margin:0">${escapeHtml(entry.name)}</h2>
-              <span class="badge member" title="Ruolo: MEMBER">MEMBER</span>
+              <span class="badge member">MEMBER</span>
             </div>
             <div class="kv"><div class="k">Codice</div><div class="v">${escapeHtml(entry.code)}</div></div>
             <div class="kv">
               <div class="k">Master</div>
-              <div class="v">
-                ${master
-                  ? `#${encodeURIComponent(master.code)}<strong>${escapeHtml(`${master.code} — ${master.name}`)}</strong></a>`
-                  : '—'}
-              </div>
+              <div class="v">${master ? `#${encodeURIComponent(master.code)}<strong>${escapeHtml(`${master.code} — ${master.name}`)}</strong></a>` : '—'}</div>
             </div>
             <div class="kv"><div class="k">Posizione (Member)</div><div class="v">${escapeHtml(entry.city ? `${entry.city} — ${entry.location}` : entry.location || '—')}</div></div>
             <div class="kv"><div class="k">Posizione (Master)</div><div class="v">${escapeHtml(masterLoc)}</div></div>
-          </div>
-        `;
+          </div>`;
         attachSuggestHandlers(resultsEl);
 
       } else {
         resultsEl.innerHTML = `<div class="not-found">Il controller <strong>${escapeHtml(entry.name)}</strong> ha un ruolo non riconosciuto (<code>${escapeHtml(entry.role)}</code>).</div>`;
       }
 
-      // Deep-link: usa il codice se disponibile, altrimenti il name
       const hash = '#' + encodeURIComponent(entry.code || entry.name);
       if (location.hash !== hash) history.replaceState(null, '', hash);
     }
@@ -366,7 +350,17 @@
       clearTimeout(debounce);
       const v = e.target.value;
       debounce = setTimeout(() => {
-        const list = findSuggestions(v);
+        const list = (function findSuggestions(term) {
+          const q = norm(term); if (!q) return [];
+          const startsC = allCodes.filter(c => c.startsWith(term));
+          const inclC   = allCodes.filter(c => !c.startsWith(term) && c.includes(term));
+          const startsN = allNames.filter(n => norm(n).startsWith(q));
+          const inclN   = allNames.filter(n => !norm(n).startsWith(q) && norm(n).includes(q));
+          const merged  = [...startsC, ...inclC, ...startsN, ...inclN];
+          const out = []; const seen = new Set();
+          for (const x of merged) if (!seen.has(x)) { out.push(x); seen.add(x); }
+          return out.slice(0, 10);
+        })(v);
         list.length ? openSuggestions(list, v) : closeSuggestions();
       }, 60);
     });
@@ -381,29 +375,13 @@
       if (e.key === 'Enter') { closeSuggestions(); render(input.value); }
     });
 
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('.search-box')) closeSuggestions();
-    });
-
+    document.addEventListener('click', (e) => { if (!e.target.closest('.search-box')) closeSuggestions(); });
     $('#searchBtn').addEventListener('click', () => { closeSuggestions(); render(input.value); });
-
-    $$('.chip[data-fill]').forEach(chip => {
-      chip.addEventListener('click', () => {
-        const v = chip.getAttribute('data-fill') || '';
-        input.value = v; closeSuggestions(); render(v);
-      });
-    });
+    $$('.chip[data-fill]').forEach(chip => chip.addEventListener('click', () => { const v=chip.getAttribute('data-fill')||''; input.value=v; closeSuggestions(); render(v); }));
 
     $('#reloadBtn').addEventListener('click', async () => {
-      try {
-        statusEl.textContent = 'Ricarico...';
-        await loadData({ bust:true });
-        statusEl.textContent = 'Aggiornato';
-        if (input.value) render(input.value);
-      } catch (err) {
-        statusEl.textContent = 'Errore';
-        $('#results').innerHTML = `<div class="not-found">Errore ricarica: ${escapeHtml(err.message || String(err))}</div>`;
-      }
+      try { statusEl.textContent = 'Ricarico...'; await loadData({ bust:true }); statusEl.textContent = 'Aggiornato'; if (input.value) render(input.value); }
+      catch (err) { statusEl.textContent = 'Errore'; $('#results').innerHTML = `<div class="not-found">Errore ricarica: ${escapeHtml(err.message || String(err))}</div>`; }
     });
 
     // ======= Init =======
@@ -411,15 +389,12 @@
       try {
         statusEl.textContent = 'Carico dati...';
         await loadData();
-        statusEl.textContent = 'Dati caricati';
-        // Deep-link: priorità al codice (#0041); se hash non numerico prova come name
-        const rawHash = decodeURIComponent((location.hash || '').replace(/^#/, ''));
-        if (rawHash) {
-          $('#query').value = rawHash;
-          render(rawHash);
-        } else {
-          $('#results').innerHTML = `<div class="not-found">Pronto. Inserisci un <strong>codice</strong> (es. 0041) o seleziona un esempio sopra.</div>`;
-        }
+        if (!byCode.size) statusEl.textContent = 'Nessun dato caricato';
+        else              statusEl.textContent = statusEl.textContent || 'Dati caricati';
+
+        const hash = decodeURIComponent((location.hash || '').replace(/^#/, ''));
+        if (hash) { $('#query').value = hash; render(hash); }
+        else { $('#results').innerHTML = `<div class="not-found">Pronto. Inserisci un <strong>codice</strong> (es. 0041) o seleziona un esempio sopra.</div>`; }
       } catch (err) {
         statusEl.textContent = 'Errore';
         $('#results').innerHTML = `<div class="not-found">Errore nel caricamento dati: ${escapeHtml(err.message || String(err))}</div>`;
@@ -428,4 +403,3 @@
   </script>
 </body>
 </html>
-
