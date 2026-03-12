@@ -1,32 +1,39 @@
 {
   "controllers": [
-    { "code": "0041", "name": "(0041)_ITA_MI_iSTAR_T01_A*", "role": "MASTER", "city": "Milano BA", "location": "0° piano BA — Locale Rack AT006" },
-    { "code": "0042", "name": "(0042)_ITA_MI_iSTAR_T02_A",  "role": "MEMBER", "city": "Milano BA", "location": "0° piano BA — Locale Rack AT011" },
-    { "code": "0043", "name": "(0043)_ITA_MI_iSTAR_T03_A",  "role": "MEMBER", "city": "Milano BA", "location": "0° piano BA — Locale Rack AT011" },
-
-    { "code": "0028", "name": "(0028)_ITA_MI_iSTAR_11_A*",  "role": "MASTER", "city": "Milano BA", "location": "1° piano BA — Locale Rack A126" },
-    { "code": "0029", "name": "(0029)_ITA_MI_iSTAR_12_A",   "role": "MEMBER", "city": "Milano BA", "location": "1° piano BA — Locale Rack A126" },
-    { "code": "0030", "name": "(0030)_ITA_MI_iSTAR_13_A",   "role": "MEMBER", "city": "Milano BA", "location": "1° piano BA — P1 Disimpegno Core" },
-
-    { "code": "0031", "name": "(0031)_ITA_MI_iSTAR_21_A*",  "role": "MASTER", "city": "Milano BA", "location": "2° piano BA — Locale Rack A227" },
-    { "code": "0032", "name": "(0032)_ITA_MI_iSTAR_22_A",   "role": "MEMBER", "city": "Milano BA", "location": "2° piano BA — Locale Rack A227" },
-    { "code": "0033", "name": "(0033)_ITA_MI_iSTAR_23_A",   "role": "MEMBER", "city": "Milano BA", "location": "2° piano BA — Locale Rack A227" },
-
-    { "code": "0099", "name": "(0099)_ITA_MI_iSTAR_01_FC*", "role": "MASTER", "city": "Milano FC", "location": "-1° piano FC — Locale Q.E. FC" },
-    { "code": "0101", "name": "(0101)_ITA_MI_iSTAR_03_FC",  "role": "MEMBER", "city": "Milano FC", "location": "-1° piano FC — Locale Q.E. FC" },
-    { "code": "0102", "name": "(0102)_ITA_MI_iSTAR_04_FC",  "role": "MEMBER", "city": "Milano FC", "location": "-1° piano FC — Locale Q.E. FC" }
+    { "code": "0040", "name": "(0040)_ITA_MI_iSTAR_I01_A*", "role": "MASTER", "city": "Milano BA", "location": "0° piano BA; Locale Rack AT006" },
+    { "code": "0041", "name": "(0041)_ITA_MI_iSTAR_T01_A*", "role": "MASTER", "city": "Milano BA", "location": "0° piano BA; Locale Rack AT006" },
+    { "code": "0042", "name": "(0042)_ITA_MI_iSTAR_T02_A", "role": "MEMBER", "city": "Milano BA", "location": "0° piano BA; Locale Rack AT011" },
+    { "code": "0043", "name": "(0043)_ITA_MI_iSTAR_T03_A", "role": "MEMBER", "city": "Milano BA", "location": "0° piano BA; Locale Rack AT011" },
+    { "code": "0028", "name": "(0028)_ITA_MI_iSTAR_11_A*", "role": "MASTER", "city": "Milano BA", "location": "1° piano BA; Locale Rack A126" },
+    { "code": "0029", "name": "(0029)_ITA_MI_iSTAR_12_A", "role": "MEMBER", "city": "Milano BA", "location": "1° piano BA; Locale Rack A126" },
+    { "code": "0030", "name": "(0030)_ITA_MI_iSTAR_13_A", "role": "MEMBER", "city": "Milano BA", "location": "1° piano BA; A P1 Disimpegno Core" },
+    { "code": "0031", "name": "(0031)_ITA_MI_iSTAR_21_A*", "role": "MASTER", "city": "Milano BA", "location": "2° piano BA; Locale Rack A227" },
+    { "code": "0032", "name": "(0032)_ITA_MI_iSTAR_22_A", "role": "MEMBER", "city": "Milano BA", "location": "2° piano BA; Locale Rack A227" },
+    { "code": "0033", "name": "(0033)_ITA_MI_iSTAR_23_A", "role": "MEMBER", "city": "Milano BA", "location": "2° piano BA; Locale Rack A227" },
+    { "code": "0034", "name": "(0034)_ITA_MI_iSTAR_31_A*", "role": "MASTER", "city": "Milano BA", "location": "3° piano BA; Locale Rack A322" },
+    { "code": "0035", "name": "(0035)_ITA_MI_iSTAR_32_A", "role": "MEMBER", "city": "Milano BA", "location": "3° piano BA; Locale Rack A322" },
+    { "code": "0036", "name": "(0036)_ITA_MI_iSTAR_41_A*", "role": "MASTER", "city": "Milano BA", "location": "4° piano BA; Locale Rack A415" },
+    { "code": "0037", "name": "(0037)_ITA_MI_iSTAR_42_A", "role": "MEMBER", "city": "Milano BA", "location": "4° piano BA; Locale Rack A415" },
+    { "code": "0038", "name": "(0038)_ITA_MI_iSTAR_51_A*", "role": "MASTER", "city": "Milano BA", "location": "5° piano BA; Locale Rack A503" },
+    { "code": "0039", "name": "(0039)_ITA_MI_iSTAR_52_A", "role": "MASTER", "city": "Milano BA", "location": "5° piano BA; Locale Rack A503" },
+    { "code": "0050", "name": "(0050)_ITA_MI_iSTAR_T01_B2*", "role": "MASTER", "city": "Milano B2", "location": "Mezzanino° piano B2; Location Locale Rack B2 T003" },
+    { "code": "0045", "name": "(0045)_ITA_MI_iSTAR_11_B2", "role": "MEMBER", "city": "Milano B2", "location": "1° piano B2; Locale Rack B2 108" },
+    { "code": "0046", "name": "(0046)_ITA_MI_iSTAR_21_B2", "role": "MEMBER", "city": "Milano B2", "location": "2° piano B2; Locale Rack B2 208" },
+    { "code": "0088", "name": "(0088)_ITA_MI_iSTAR_I01_B1_INT_A*", "role": "MASTER", "city": "Milano B1", "location": "Interrato° piano B1; Locale Rack B1 I020" },
+    { "code": "0089", "name": "(0089)_ITA_MI_iSTAR_I02_B1_INT_A", "role": "MEMBER", "city": "Milano B1", "location": "Interrato° B1; Locale Rack B1 I020" }
   ],
   "links": [
     { "member": "0042", "master": "0041" },
     { "member": "0043", "master": "0041" },
-
     { "member": "0029", "master": "0028" },
     { "member": "0030", "master": "0028" },
-
     { "member": "0032", "master": "0031" },
     { "member": "0033", "master": "0031" },
-
-    { "member": "0101", "master": "0099" },
-    { "member": "0102", "master": "0099" }
+    { "member": "0035", "master": "0034" },
+    { "member": "0037", "master": "0036" },
+    { "member": "0039", "master": "0038" },
+    { "member": "0045", "master": "0050" },
+    { "member": "0046", "master": "0050" },
+    { "member": "0089", "master": "0088" }
   ]
 }
