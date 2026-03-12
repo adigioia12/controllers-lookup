@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>iSTAR Network Lookup</title>
+    <style>
+        :root {
+            --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --muted: #94a3b8;
+            --accent-master: #10b981; --accent-member: #f59e0b; --border: #334155;
+            --highlight: #3b82f6;
+        }
+        body {
+            background-color: var(--bg); color: var(--text);
+            font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* --- LOGIN OVERLAY --- */
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.98);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 9999; backdrop-filter: blur(10px);
+        }
+        .login-box {
+            background: var(--card); padding: 40px; border-radius: 20px;
+            border: 1px solid var(--border); text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); width: 90%; max-width: 400px;
+        }
+        .login-box h2 { margin-bottom: 20px; color: var(--highlight); }
+        .login-box input {
+            width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border);
+            background: #0f172a; color: white; margin-bottom: 20px; text-align: center; font-size: 1.1rem;
+        }
+        .login-box button {
+            background: var(--highlight); color: white; border: none; padding: 12px 30px;
+            border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%;
+        }
+        .login-box button:hover { opacity: 0.9; }
+        .error-msg { color: #ef4444; font-size: 0.9rem; margin-top: 10px; display: none; }
+
+        /* --- MAIN CONTENT (Hidden by default) --- */
+        #main-content { display: none; }
+
+        /* --- APP STYLES --- */
+        .container { max-width: 850px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { font-size: 2.2rem; color: var(--highlight); margin-bottom: 5px; }
+        
+        .search-container { position: relative; margin-bottom: 2rem; }
+        input#query {
+            width: 100%; padding: 18px 25px; border-radius: 12px; border: 2px solid var(--border);
+            background: var(--card); color: white; font-size: 1.2rem; box-sizing: border-box;
+            outline: none; transition: all 0.2s;
+        }
+        input#query:focus { border-color: var(--highlight); box-shadow: 0 0 15px rgba(59, 130, 246, 0.3); }
+
+        .result-card {
+            background: var(--card); border-radius: 16px; padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4); border: 1px solid var(--border);
+            animation: fadeIn 0.4s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .badge {
+            padding: 5px 14px; border-radius: 999px; font-size: 0.85rem; font-weight: 800;
+            text-transform: uppercase; display: inline-block; margin-bottom: 12px;
+        }
+        .badge.master { background: var(--accent-master); color: #064e3b; }
+        .badge.member { background: var(--accent-member); color: #78350f; }
+
+        .info-row {
+            background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px;
+            margin-top: 15px; border-left: 5px solid var(--highlight);
+        }
+        .label { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 600; }
+        .value { font-size: 1.15rem; margin-top: 5px; display: block; color: #fff; }
+
+        .cluster-section { 
+            margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--border); 
+        }
+        .member-list-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px; border-radius: 8px; margin-bottom: 5px;
+            background: rgba(255,255,255,0.02); border: 1px solid transparent;
+        }
+        .member-list-item:hover { border-color: var(--border); background: rgba(255,255,255,0.05); }
+
+        .no-results { text-align: center; color: var(--muted); padding: 50px; border: 2px dashed var(--border); border-radius: 16px; }
+    </style>
+</head>
+<body>
+
+<!-- Login Gate -->
+<div id="login-overlay">
+    <div class="login-box">
+        <h2>🔒 Access Restricted</h2>
+        <p style="color: var(--muted); margin-bottom: 20px;">Inserisci la Master Password per consultare l'anagrafica iSTAR.</p>
+        <input type="password" id="pass-input" placeholder="Password" autofocus>
+        <button onclick="checkPassword()">Accedi</button>
+        <div id="error-msg" class="error-msg">Password errata. Riprova.</div>
+    </div>
+</div>
+
+<!-- Protected Content -->
+<div id="main-content">
+    <div class="container">
+        <header>
+            <h1>iSTAR Finder</h1>
+            <p style="color: var(--muted)">Inserisci l'ID a 4 cifre o il nome del controller</p>
+        </header>
+
+        <div class="search-container">
+            <input type="text" id="query" placeholder="Cerca controller..." autocomplete="off">
+        </div>
+
+        <div id="results">
+            <div class="no-results">In attesa del caricamento dati...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+/**
+ * SECURITY CONFIG
+ * To change the password, type your new password in an online "SHA-256 generator"
+ * and replace the code below. 
+ * Current password: istar2024
+ */
+const HASHED_PASS = "73365922880757a759086780998845e2373070445d479135760822183f3e0988"; 
+
+async function sha256(message) {
+    const msgBuffer = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function checkPassword() {
+    const input = document.getElementById('pass-input').value;
+    const inputHash = await sha256(input);
+    
+    if (inputHash === HASHED_PASS) {
+        sessionStorage.setItem('istar_auth', 'true');
+        showApp();
+    } else {
+        document.getElementById('error-msg').style.display = 'block';
+    }
+}
+
+// Allow "Enter" key to submit password
+document.getElementById('pass-input').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') checkPassword();
+});
+
+function showApp() {
+    document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    loadData(); // Start loading JSON only after login
+}
+
+// Check session on load
+if (sessionStorage.getItem('istar_auth') === 'true') {
+    showApp();
+}
+
+
+/* --- APP LOGIC --- */
+
+let controllerData = [];
+const masterToMemberMap = new Map();
+
+async function loadData() {
+    try {
+        const response = await fetch('controllers.json');
+        if (!response.ok) throw new Error('Impossibile caricare controllers.json');
+        const data = await response.json();
+        controllerData = data.controllers;
+
+        controllerData.forEach(c => {
+            if (c.masterId) {
+                if (!masterToMemberMap.has(c.masterId)) masterToMemberMap.set(c.masterId, []);
+                masterToMemberMap.get(c.masterId).push(c);
+            }
+        });
+
+        document.getElementById('results').innerHTML = '<div class="no-results">Pronto. Inserisci una ricerca.</div>';
+        
+        const hash = window.location.hash.replace('#', '');
+        if (hash) {
+            document.getElementById('query').value = hash;
+            performSearch(hash);
+        }
+    } catch (err) {
+        document.getElementById('results').innerHTML = `<div class="no-results" style="color:#ef4444">Errore Caricamento: Verificare che controllers.json sia presente.</div>`;
+    }
+}
+
+function performSearch(query) {
+    const q = query.toLowerCase().trim();
+    if (!q) {
+        document.getElementById('results').innerHTML = '<div class="no-results">Inserisci un ID o un nome.</div>';
+        return;
+    }
+
+    const found = controllerData.find(c => c.id === q) || 
+                  controllerData.find(c => c.name.toLowerCase().includes(q));
+
+    if (found) renderUI(found);
+    else document.getElementById('results').innerHTML = `<div class="no-results">Nessun controller trovato per "${query}"</div>`;
+}
+
+function renderUI(c) {
+    const container = document.getElementById('results');
+    window.location.hash = c.id;
+
+    let html = `
+        <div class="result-card">
+            <span class="badge ${c.role.toLowerCase()}">${c.role}</span>
+            <h2 style="margin: 0 0 15px 0; font-size: 1.6rem;">${c.name}</h2>
+            <div class="info-row">
+                <span class="label">📍 Ubicazione Controller</span>
+                <span class="value">${c.city} — ${c.location}</span>
+            </div>
+    `;
+
+    if (c.role === 'MEMBER') {
+        const master = controllerData.find(m => m.id === c.masterId);
+        html += `
+            <div class="cluster-section">
+                <span class="label">🏢 Master del Cluster</span>
+                <div class="info-row" style="border-color: var(--accent-master); background: rgba(16, 185, 129, 0.05);">
+                    <span class="value" style="font-weight: 700;">${master ? master.name : 'Master ID: ' + c.masterId}</span>
+                    <span class="value" style="font-size: 1rem; color: var(--muted);">${master ? master.location : 'N/A'}</span>
+                </div>
+            </div>
+        `;
+    } else {
+        const members = masterToMemberMap.get(c.id) || [];
+        html += `
+            <div class="cluster-section">
+                <span class="label">🔗 Cluster Members (${members.length})</span>
+                <div style="margin-top: 12px;">
+                    ${members.length > 0 ? members.map(m => `
+                        <div class="member-list-item">
+                            <span><strong>${m.id}</strong> <span style="color:var(--muted); margin:0 5px;">|</span> ${m.name.split('_').pop()}</span>
+                            <span style="font-size: 0.85rem; color: var(--highlight);">${m.location}</span>
+                        </div>
+                    `).join('') : '<div class="value" style="font-size:0.9rem; color:var(--muted)">Nessun member collegato.</div>'}
+                </div>
+            </div>
+        `;
+    }
+    container.innerHTML = html + `</div>`;
+}
+
+document.getElementById('query').addEventListener('input', (e) => performSearch(e.target.value));
+</script>
+
+</body>
+</html>
